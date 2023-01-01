@@ -73,7 +73,7 @@ import org.apache.tez.serviceplugins.api.TaskCommunicator;
 import org.apache.tez.dag.app.AppContext;
 import org.apache.tez.dag.app.ContainerHeartbeatHandler;
 import org.apache.tez.dag.app.ContainerContext;
-import org.apache.tez.dag.app.TaskCommunicatorManagerInterface;
+import org.apache.tez.dag.app.TaskCommManagerInterface;
 import org.apache.tez.dag.app.dag.event.TaskAttemptEventContainerTerminated;
 import org.apache.tez.dag.app.dag.event.TaskAttemptEventContainerTerminatedBySystem;
 import org.apache.tez.dag.app.dag.event.TaskAttemptEventContainerTerminating;
@@ -1228,7 +1228,7 @@ public class TestAMContainer {
     Priority priority;
     Container container;
     ContainerHeartbeatHandler chh;
-    TaskCommunicatorManagerInterface tal;
+    TaskCommManagerInterface tal;
 
     @SuppressWarnings("rawtypes")
     EventHandler eventHandler;
@@ -1260,7 +1260,7 @@ public class TestAMContainer {
 
       chh = mock(ContainerHeartbeatHandler.class);
 
-      tal = mock(TaskCommunicatorManagerInterface.class);
+      tal = mock(TaskCommManagerInterface.class);
       TaskCommunicator taskComm = mock(TaskCommunicator.class);
       try {
         doReturn(new InetSocketAddress("localhost", 0)).when(taskComm).getAddress();
@@ -1488,7 +1488,7 @@ public class TestAMContainer {
     return lr;
   }
 
-  private void verifyUnregisterRunningContainer(TaskCommunicatorManagerInterface tal, ContainerId containerId,
+  private void verifyUnregisterRunningContainer(TaskCommManagerInterface tal, ContainerId containerId,
                                                 int taskCommId,
                                                 ContainerEndReason containerEndReason,
                                                 String diagContains) {
@@ -1503,7 +1503,7 @@ public class TestAMContainer {
     }
   }
 
-  private void verifyUnregisterTaskAttempt(TaskCommunicatorManagerInterface tal, TezTaskAttemptID taId,
+  private void verifyUnregisterTaskAttempt(TaskCommManagerInterface tal, TezTaskAttemptID taId,
                                            int taskCommId, TaskAttemptEndReason endReason,
                                            String diagContains) {
     ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(String.class);

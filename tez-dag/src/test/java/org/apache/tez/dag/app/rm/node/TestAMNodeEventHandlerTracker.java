@@ -57,9 +57,9 @@ import org.junit.Test;
 import com.google.common.collect.Lists;
 
 @SuppressWarnings({ "resource", "rawtypes" })
-public class TestAMNodeTracker {
+public class TestAMNodeEventHandlerTracker {
 
-  private static final Logger LOG = LoggerFactory.getLogger(TestAMNodeTracker.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TestAMNodeEventHandlerTracker.class);
 
   DrainDispatcher dispatcher;
   EventHandler eventHandler;
@@ -376,7 +376,7 @@ public class TestAMNodeTracker {
       NodeId nodeId = NodeId.newInstance("fakenode", 3333);
       amNodeTracker.nodeSeen(nodeId, 0);
 
-      AMNode amNode = amNodeTracker.get(nodeId, 0);
+      AMNodeEventHandler amNodeEventHandler = amNodeTracker.get(nodeId, 0);
       ContainerId[] containerIds = new ContainerId[7];
 
       // Start 5 containers.
@@ -385,11 +385,11 @@ public class TestAMNodeTracker {
         amNodeTracker
             .handle(new AMNodeEventContainerAllocated(nodeId, 0, containerIds[i]));
       }
-      assertEquals(5, amNode.getContainers().size());
+      assertEquals(5, amNodeEventHandler.getContainers().size());
 
       // Finnish 1st dag
       amNodeTracker.dagComplete(mock(DAG.class));
-      assertEquals(5, amNode.getContainers().size());
+      assertEquals(5, amNodeEventHandler.getContainers().size());
 
 
       // Mark 2 as complete. Finish 2nd dag.
@@ -398,7 +398,7 @@ public class TestAMNodeTracker {
             new AMNodeEventContainerCompleted(nodeId, 0, containerIds[i]));
       }
       amNodeTracker.dagComplete(mock(DAG.class));
-      assertEquals(3, amNode.getContainers().size());
+      assertEquals(3, amNodeEventHandler.getContainers().size());
 
       // Add 2 more containers. Mark all as complete. Finish 3rd dag.
       for (int i = 5; i < 7; i++) {
@@ -406,19 +406,19 @@ public class TestAMNodeTracker {
         amNodeTracker
             .handle(new AMNodeEventContainerAllocated(nodeId, 0, containerIds[i]));
       }
-      assertEquals(5, amNode.getContainers().size());
+      assertEquals(5, amNodeEventHandler.getContainers().size());
       amNodeTracker.dagComplete(mock(DAG.class));
-      assertEquals(5, amNode.getContainers().size());
+      assertEquals(5, amNodeEventHandler.getContainers().size());
       amNodeTracker.dagComplete(mock(DAG.class));
-      assertEquals(5, amNode.getContainers().size());
+      assertEquals(5, amNodeEventHandler.getContainers().size());
 
       for (int i = 2; i < 7; i++) {
         amNodeTracker.handle(
             new AMNodeEventContainerCompleted(nodeId, 0, containerIds[i]));
       }
-      assertEquals(5, amNode.getContainers().size());
+      assertEquals(5, amNodeEventHandler.getContainers().size());
       amNodeTracker.dagComplete(mock(DAG.class));
-      assertEquals(0, amNode.getContainers().size());
+      assertEquals(0, amNodeEventHandler.getContainers().size());
 
     } finally {
       amNodeTracker.stop();
@@ -468,7 +468,7 @@ public class TestAMNodeTracker {
       nodeId = NodeId.newInstance("host1", 1234);
       amNodeTracker.nodeSeen(nodeId, 0);
     }
-    AMNodeImpl node = (AMNodeImpl) amNodeTracker.get(nodeId, 0);
+    AMNodeEventHandlerImpl node = (AMNodeEventHandlerImpl) amNodeTracker.get(nodeId, 0);
 
     // simulate task starting on node
     ContainerId cid = mock(ContainerId.class);
@@ -496,7 +496,7 @@ public class TestAMNodeTracker {
     NodeId nodeId = NodeId.newInstance("host1", 1234);
     amNodeTracker.nodeSeen(nodeId, schedulerId);
 
-    AMNodeImpl node = (AMNodeImpl) amNodeTracker.get(nodeId, schedulerId);
+    AMNodeEventHandlerImpl node = (AMNodeEventHandlerImpl) amNodeTracker.get(nodeId, schedulerId);
 
     ContainerId cId1 = mock(ContainerId.class);
     ContainerId cId2 = mock(ContainerId.class);
@@ -533,7 +533,7 @@ public class TestAMNodeTracker {
     amNodeTracker.nodeSeen(nodeId2, schedulerId);
     amNodeTracker.nodeSeen(nodeId3, schedulerId);
     amNodeTracker.nodeSeen(nodeId4, schedulerId);
-    AMNodeImpl node = (AMNodeImpl) amNodeTracker.get(nodeId, schedulerId);
+    AMNodeEventHandlerImpl node = (AMNodeEventHandlerImpl) amNodeTracker.get(nodeId, schedulerId);
 
     ContainerId cId1 = mock(ContainerId.class);
     ContainerId cId2 = mock(ContainerId.class);
@@ -583,7 +583,7 @@ public class TestAMNodeTracker {
     ContainerId cId5 = mock(ContainerId.class);
     TezTaskAttemptID ta4 = mock(TezTaskAttemptID.class);
     TezTaskAttemptID ta5 = mock(TezTaskAttemptID.class);
-    AMNodeImpl node2 = (AMNodeImpl) amNodeTracker.get(nodeId2, schedulerId);
+    AMNodeEventHandlerImpl node2 = (AMNodeEventHandlerImpl) amNodeTracker.get(nodeId2, schedulerId);
     amNodeTracker.handle(new AMNodeEventContainerAllocated(nodeId2, schedulerId, cId4));
     amNodeTracker.handle(new AMNodeEventContainerAllocated(nodeId2, schedulerId, cId5));
 
@@ -596,7 +596,7 @@ public class TestAMNodeTracker {
     dispatcher.await();
     assertEquals(2, node2.numFailedTAs);
     assertEquals(AMNodeState.FORCED_ACTIVE, node2.getState());
-    AMNodeImpl node3 = (AMNodeImpl) amNodeTracker.get(nodeId3, schedulerId);
+    AMNodeEventHandlerImpl node3 = (AMNodeEventHandlerImpl) amNodeTracker.get(nodeId3, schedulerId);
     assertEquals(AMNodeState.FORCED_ACTIVE, node3.getState());
     assertEquals(5, handler.events.size());
 

@@ -381,7 +381,7 @@ public class TestAMWebController {
     doReturn(ImmutableMap.of(
         mockVertex1.getVertexId(), mockVertex1,
         mockVertex2.getVertexId(), mockVertex2
-    )).when(mockDAG).getVertices();
+    )).when(mockDAG).getVertexId_vertex();
 
     doReturn(true).when(spy).setupResponse();
     doReturn(mockDAG).when(spy).checkAndGetDAGFromRequest();
@@ -635,7 +635,7 @@ public class TestAMWebController {
     doReturn(mockVertex).when(mockDAG).getVertex(vertexID);
     doReturn(ImmutableMap.of(
         vertexID, mockVertex
-    )).when(mockDAG).getVertices();
+    )).when(mockDAG).getVertexId_vertex();
 
     //Creating mock tasks and attaching to mock vertex
     Map<TezTaskID, Task> taskMap = Maps.newHashMap();
@@ -772,7 +772,7 @@ public class TestAMWebController {
     doReturn(mockVertex).when(mockDAG).getVertex(vertexID);
     doReturn(ImmutableMap.of(
         vertexID, mockVertex
-    )).when(mockDAG).getVertices();
+    )).when(mockDAG).getVertexId_vertex();
 
     //Creating mock task and attaching to mock Vertex
     TezTaskID taskID = TezTaskID.fromString("task_1441301219877_0109_1_00_000000");

@@ -108,7 +108,7 @@ import org.apache.tez.dag.app.AppContext;
 import org.apache.tez.dag.app.ContainerContext;
 import org.apache.tez.dag.app.RecoveryParser.VertexRecoveryData;
 import org.apache.tez.dag.app.TaskAttemptEventInfo;
-import org.apache.tez.dag.app.TaskCommunicatorManagerInterface;
+import org.apache.tez.dag.app.TaskCommManagerInterface;
 import org.apache.tez.dag.app.TaskHeartbeatHandler;
 import org.apache.tez.dag.app.dag.DAG;
 import org.apache.tez.dag.app.dag.RootInputInitializerManager;
@@ -226,7 +226,7 @@ public class VertexImpl implements org.apache.tez.dag.app.dag.Vertex, EventHandl
 
     private final Lock readLock;
     private final Lock writeLock;
-    private final TaskCommunicatorManagerInterface taskCommunicatorManagerInterface;
+    private final TaskCommManagerInterface taskCommManagerInterface;
     private final TaskHeartbeatHandler taskHeartbeatHandler;
     private final Object tasksSyncHandle = new Object();
 
@@ -316,8 +316,7 @@ public class VertexImpl implements org.apache.tez.dag.app.dag.Vertex, EventHandl
     private static final CommitCompletedTransition
             COMMIT_COMPLETED_TRANSITION =
             new CommitCompletedTransition();
-    private static final VertexStateChangedCallback STATE_CHANGED_CALLBACK =
-            new VertexStateChangedCallback();
+    private static final VertexStateChangedCallback STATE_CHANGED_CALLBACK = new VertexStateChangedCallback();
 
     @VisibleForTesting
     final List<TezEvent> pendingInitializerEvents = new LinkedList<TezEvent>();
@@ -981,13 +980,21 @@ public class VertexImpl implements org.apache.tez.dag.app.dag.Vertex, EventHandl
         }
     }
 
-    public VertexImpl(TezVertexID vertexId, VertexPlan vertexPlan,
-                      String vertexName, Configuration dagConf, EventHandler eventHandler,
-                      TaskCommunicatorManagerInterface taskCommunicatorManagerInterface, Clock clock,
-                      TaskHeartbeatHandler thh, boolean commitVertexOutputs,
-                      AppContext appContext, VertexLocationHint vertexLocationHint,
-                      Map<String, VertexGroupInfo> dagVertexGroups, TaskSpecificLaunchCmdOption taskSpecificLaunchCmdOption,
-                      StateChangeNotifier entityStatusTracker, Configuration dagOnlyConf) {
+    public VertexImpl(TezVertexID vertexId,
+                      VertexPlan vertexPlan,
+                      String vertexName,
+                      Configuration dagConf,
+                      EventHandler eventHandler,
+                      TaskCommManagerInterface taskCommManagerInterface,
+                      Clock clock,
+                      TaskHeartbeatHandler thh,
+                      boolean commitVertexOutputs,
+                      AppContext appContext,
+                      VertexLocationHint vertexLocationHint,
+                      Map<String, VertexGroupInfo> dagVertexGroups,
+                      TaskSpecificLaunchCmdOption taskSpecificLaunchCmdOption,
+                      StateChangeNotifier entityStatusTracker,
+                      Configuration dagOnlyConf) {
         this.vertexId = vertexId;
         this.vertexPlan = vertexPlan;
         this.vertexName = StringInterner.intern(vertexName);
@@ -1008,7 +1015,7 @@ public class VertexImpl implements org.apache.tez.dag.app.dag.Vertex, EventHandl
         this.commitVertexOutputs = commitVertexOutputs;
         this.logIdentifier = this.getVertexId() + " [" + this.getName() + "]";
 
-        this.taskCommunicatorManagerInterface = taskCommunicatorManagerInterface;
+        this.taskCommManagerInterface = taskCommManagerInterface;
         this.taskHeartbeatHandler = thh;
         this.eventHandler = eventHandler;
         ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
@@ -2658,7 +2665,7 @@ public class VertexImpl implements org.apache.tez.dag.app.dag.Vertex, EventHandl
         return new TaskImpl(this.getVertexId(), taskIndex,
                 this.eventHandler,
                 vertexConf,
-                this.taskCommunicatorManagerInterface,
+                this.taskCommManagerInterface,
                 this.clock,
                 this.taskHeartbeatHandler,
                 this.appContext,

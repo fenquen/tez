@@ -246,7 +246,7 @@ public class TestTaskCommunicatorManager2 {
     Map<ApplicationAccessType, String> appAcls = new HashMap<ApplicationAccessType, String>();
     Configuration conf = new TezConfiguration();
     UserPayload userPayload;
-    TaskCommunicatorManager taskCommunicatorManager;
+    TaskCommManager taskCommunicatorManager;
     private AtomicInteger taskIdCounter = new AtomicInteger(0);
 
     TaskCommunicatorManagerWrapperForTest() throws IOException, TezException {
@@ -273,13 +273,13 @@ public class TestTaskCommunicatorManager2 {
       userPayload = TezUtils.createUserPayloadFromConf(conf);
 
       taskCommunicatorManager =
-          new TaskCommunicatorManager(appContext, mock(TaskHeartbeatHandler.class),
+          new TaskCommManager(appContext, mock(TaskHeartbeatHandler.class),
               mock(ContainerHeartbeatHandler.class), Lists.newArrayList(new NamedEntityDescriptor(
               TezConstants.getTezYarnServicePluginName(), null).setUserPayload(userPayload)));
     }
 
 
-    TaskCommunicatorManager getTaskCommunicatorManager() {
+    TaskCommManager getTaskCommunicatorManager() {
       return taskCommunicatorManager;
     }
 

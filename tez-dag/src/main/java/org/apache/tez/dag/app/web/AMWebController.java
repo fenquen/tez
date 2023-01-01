@@ -41,7 +41,6 @@ import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.tez.common.counters.CounterGroup;
 import org.apache.tez.common.counters.LimitExceededException;
 import org.apache.tez.common.counters.TezCounter;
@@ -313,7 +312,7 @@ public class AMWebController extends Controller {
 
     Collection<Vertex> vertices;
     if (vertexIDs.isEmpty()) {
-      vertices = currentDAG.getVertices().values();
+      vertices = currentDAG.getVertexId_vertex().values();
     } else {
       vertices = getVerticesByIdx(currentDAG, vertexIDs);
     }
@@ -639,7 +638,7 @@ public class AMWebController extends Controller {
     Collection<Vertex> vertexList;
     if (requestedIDs.isEmpty()) {
       // no ids specified return all.
-      vertexList = dag.getVertices().values();
+      vertexList = dag.getVertexId_vertex().values();
     } else {
       vertexList = getVerticesByIdx(dag, requestedIDs);
     }
@@ -714,7 +713,7 @@ public class AMWebController extends Controller {
         }
       }
       else {
-        Collection<Vertex> vertices = dag.getVertices().values();
+        Collection<Vertex> vertices = dag.getVertexId_vertex().values();
         for (Vertex vertex : vertices) {
           List<Task> vertexTasks = new ArrayList<Task>(vertex.getTasks().values());
           tasks.addAll(vertexTasks.subList(0, Math.min(vertexTasks.size(), limit - tasks.size())));

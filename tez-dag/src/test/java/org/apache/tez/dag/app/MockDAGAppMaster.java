@@ -134,7 +134,7 @@ public class MockDAGAppMaster extends DAGAppMaster {
     
     Map<ContainerId, ContainerData> containers = Maps.newConcurrentMap();
     ArrayBlockingQueue<Worker> workers;
-    TaskCommunicatorManager taskCommunicatorManager;
+    TaskCommManager taskCommunicatorManager;
     TezTaskCommunicatorImpl taskCommunicator;
     
     AtomicBoolean startScheduling = new AtomicBoolean(true);
@@ -193,7 +193,7 @@ public class MockDAGAppMaster extends DAGAppMaster {
     
     @Override
     public void start() throws Exception {
-      taskCommunicatorManager = (TaskCommunicatorManager) getTaskCommunicatorManager();
+      taskCommunicatorManager = (TaskCommManager) getTaskCommManager();
       taskCommunicator = (TezTaskCommunicatorImpl) taskCommunicatorManager.getTaskCommunicator(0).getTaskCommunicator();
       eventHandlingThread = new Thread(this);
       eventHandlingThread.start();
@@ -299,7 +299,7 @@ public class MockDAGAppMaster extends DAGAppMaster {
     }
     
     void incrementTime(long inc) {
-      Clock clock = MockDAGAppMaster.this.getContext().getClock();
+      Clock clock = MockDAGAppMaster.this.getAppContext().getClock();
       if (clock instanceof MockClock) {
         ((MockClock) clock).incrementTime(inc);
       }
@@ -413,7 +413,7 @@ public class MockDAGAppMaster extends DAGAppMaster {
               List<TezEvent> events = Lists.newArrayListWithCapacity(
                                       cData.taskSpec.getOutputs().size() + 1);
               if (cData.numUpdates == 0 && eventsDelegate != null) {
-                eventsDelegate.getEvents(cData.taskSpec, events, MockDAGAppMaster.this.getContext().getClock().getTime());
+                eventsDelegate.getEvents(cData.taskSpec, events, MockDAGAppMaster.this.getAppContext().getClock().getTime());
               }
               TezCounters counters = null;
               if (countersDelegate != null) {
@@ -429,7 +429,7 @@ public class MockDAGAppMaster extends DAGAppMaster {
               events.add(new TezEvent(new TaskStatusUpdateEvent(counters, progress, stats, false), 
                   new EventMetaData(
                   EventProducerConsumerType.SYSTEM, cData.vName, "", cData.taId),
-                  MockDAGAppMaster.this.getContext().getClock().getTime()));
+                  MockDAGAppMaster.this.getAppContext().getClock().getTime()));
               TezHeartbeatRequest request = new TezHeartbeatRequest(cData.numUpdates, events,
                   cData.nextPreRoutedFromEventId, cData.cIdStr, cData.taId, cData.nextFromEventId, 50000, 0);
               doHeartbeat(request, cData);
@@ -441,7 +441,7 @@ public class MockDAGAppMaster extends DAGAppMaster {
               List<TezEvent> events = Collections.singletonList(new TezEvent(
                   new TaskAttemptCompletedEvent(), new EventMetaData(
                       EventProducerConsumerType.SYSTEM, cData.vName, "", cData.taId),
-                  MockDAGAppMaster.this.getContext().getClock().getTime()));
+                  MockDAGAppMaster.this.getAppContext().getClock().getTime()));
               TezHeartbeatRequest request = new TezHeartbeatRequest(++cData.numUpdates, events,
                   cData.nextPreRoutedFromEventId, cData.cIdStr, cData.taId, cData.nextFromEventId, 10000, 0);
               doHeartbeat(request, cData);
@@ -521,9 +521,9 @@ public class MockDAGAppMaster extends DAGAppMaster {
     } catch (IOException e) {
       throw new TezUncheckedException(e);
     }
-    ContainerLauncherManager clManager = new ContainerLauncherManager(getContext());
+    ContainerLauncherManager clManager = new ContainerLauncherManager(getAppContext());
     ContainerLauncherContext containerLauncherContext =
-        new ContainerLauncherContextImpl(getContext(), clManager, getTaskCommunicatorManager(), userPayload, 0);
+        new ContainerLauncherContextImpl(getAppContext(), clManager, getTaskCommManager(), userPayload, 0);
     containerLauncher = new MockContainerLauncher(launcherGoFlag, containerLauncherContext);
     clManager.setContainerLauncher(containerLauncher);
     return clManager;

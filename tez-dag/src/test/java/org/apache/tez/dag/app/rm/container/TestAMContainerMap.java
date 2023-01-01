@@ -23,27 +23,14 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
-import java.net.InetSocketAddress;
-import java.util.Map;
-
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
-import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.Container;
-import org.apache.hadoop.yarn.api.records.ContainerId;
-import org.apache.hadoop.yarn.api.records.NodeId;
-import org.apache.hadoop.yarn.api.records.Priority;
-import org.apache.hadoop.yarn.api.records.Resource;
-import org.apache.hadoop.yarn.api.records.Token;
 import org.apache.tez.common.ContainerSignatureMatcher;
-import org.apache.tez.dag.app.TaskCommunicatorWrapper;
 import org.apache.tez.dag.app.dag.DAG;
 import org.apache.tez.dag.app.rm.container.TestAMContainer.WrappedContainer;
-import org.apache.tez.serviceplugins.api.TaskCommunicator;
 import org.apache.tez.dag.app.AppContext;
 import org.apache.tez.dag.app.ContainerHeartbeatHandler;
-import org.apache.tez.dag.app.TaskCommunicatorManagerInterface;
-import org.apache.tez.serviceplugins.api.ServicePluginException;
+import org.apache.tez.dag.app.TaskCommManagerInterface;
 import org.junit.Test;
 import static org.mockito.Mockito.when;
 
@@ -54,7 +41,7 @@ public class TestAMContainerMap {
   public void testCleanupOnDagComplete() {
 
     ContainerHeartbeatHandler chh = mock(ContainerHeartbeatHandler.class);
-    TaskCommunicatorManagerInterface tal = mock(TaskCommunicatorManagerInterface.class);
+    TaskCommManagerInterface tal = mock(TaskCommManagerInterface.class);
     AppContext appContext = mock(AppContext.class);
     when(appContext.getAMConf()).thenReturn(new Configuration());
 
@@ -132,7 +119,7 @@ public class TestAMContainerMap {
     private WrappedContainer[] wrappedContainers;
 
     public AMContainerMapForTest(ContainerHeartbeatHandler chh,
-                                 TaskCommunicatorManagerInterface tal,
+                                 TaskCommManagerInterface tal,
                                  ContainerSignatureMatcher containerSignatureMatcher,
                                  AppContext context, WrappedContainer[] wrappedContainers) {
       super(chh, tal, containerSignatureMatcher, context);
@@ -142,7 +129,7 @@ public class TestAMContainerMap {
     @Override
     AMContainer createAmContainer(Container container,
                                   ContainerHeartbeatHandler chh,
-                                  TaskCommunicatorManagerInterface tal,
+                                  TaskCommManagerInterface tal,
                                   ContainerSignatureMatcher signatureMatcher,
                                   AppContext appContext, int schedulerId,
                                   int launcherId, int taskCommId, String auxiliaryService) {

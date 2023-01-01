@@ -72,7 +72,7 @@ import org.apache.tez.dag.api.oldrecords.TaskAttemptState;
 import org.apache.tez.dag.app.AppContext;
 import org.apache.tez.dag.app.ContainerContext;
 import org.apache.tez.dag.app.RecoveryParser.TaskAttemptRecoveryData;
-import org.apache.tez.dag.app.TaskCommunicatorManagerInterface;
+import org.apache.tez.dag.app.TaskCommManagerInterface;
 import org.apache.tez.dag.app.TaskHeartbeatHandler;
 import org.apache.tez.dag.app.dag.TaskAttempt;
 import org.apache.tez.dag.app.dag.TaskAttemptStateInternal;
@@ -532,24 +532,24 @@ public class TaskAttemptImpl implements TaskAttempt,
 
   @SuppressWarnings("rawtypes")
   public TaskAttemptImpl(TezTaskAttemptID attemptId, EventHandler eventHandler,
-      TaskCommunicatorManagerInterface taskCommunicatorManagerInterface, Configuration conf, Clock clock,
-      TaskHeartbeatHandler taskHeartbeatHandler, AppContext appContext,
-      boolean isRescheduled,
-      Resource resource, ContainerContext containerContext, boolean leafVertex,
-      Task task, TaskLocationHint locationHint, TaskSpec taskSpec) {
-    this(attemptId, eventHandler, taskCommunicatorManagerInterface, conf, clock,
+                         TaskCommManagerInterface taskCommManagerInterface, Configuration conf, Clock clock,
+                         TaskHeartbeatHandler taskHeartbeatHandler, AppContext appContext,
+                         boolean isRescheduled,
+                         Resource resource, ContainerContext containerContext, boolean leafVertex,
+                         Task task, TaskLocationHint locationHint, TaskSpec taskSpec) {
+    this(attemptId, eventHandler, taskCommManagerInterface, conf, clock,
         taskHeartbeatHandler, appContext, isRescheduled, resource, containerContext, leafVertex,
         task, locationHint, taskSpec, null);
   }
 
   @SuppressWarnings("rawtypes")
   public TaskAttemptImpl(TezTaskAttemptID attemptId, EventHandler eventHandler,
-      TaskCommunicatorManagerInterface taskCommunicatorManagerInterface, Configuration conf, Clock clock,
-      TaskHeartbeatHandler taskHeartbeatHandler, AppContext appContext,
-      boolean isRescheduled,
-      Resource resource, ContainerContext containerContext, boolean leafVertex,
-      Task task, TaskLocationHint locationHint, TaskSpec taskSpec,
-      TezTaskAttemptID schedulingCausalTA) {
+                         TaskCommManagerInterface taskCommManagerInterface, Configuration conf, Clock clock,
+                         TaskHeartbeatHandler taskHeartbeatHandler, AppContext appContext,
+                         boolean isRescheduled,
+                         Resource resource, ContainerContext containerContext, boolean leafVertex,
+                         Task task, TaskLocationHint locationHint, TaskSpec taskSpec,
+                         TezTaskAttemptID schedulingCausalTA) {
 
     ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
     this.readLock = rwLock.readLock();

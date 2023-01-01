@@ -176,7 +176,7 @@ public class LocalClient extends FrameworkClient {
     report.setApplicationId(appId);
     report.setCurrentApplicationAttemptId(dagAppMaster.getAttemptID());
 
-    AppContext runningAppContext = dagAppMaster.getContext();
+    AppContext runningAppContext = dagAppMaster.getAppContext();
     if (runningAppContext != null) {
       DAG dag = runningAppContext.getCurrentDAG();
       if (dag != null) {
@@ -359,7 +359,7 @@ public class LocalClient extends FrameworkClient {
                   amCredentials, UserGroupInformation.getCurrentUser().getShortUserName());
           DAGAppMaster.initAndStartAppMaster(dagAppMaster, conf);
           clientHandler = new DAGClientHandler(dagAppMaster);
-          ((AsyncDispatcher)dagAppMaster.getDispatcher()).setDrainEventsOnStop();
+          ((AsyncDispatcher)dagAppMaster.getAsyncDispatcher()).setDrainEventsOnStop();
         } catch (Throwable t) {
           LOG.error("Error starting DAGAppMaster", t);
           if (dagAppMaster != null) {

@@ -46,12 +46,12 @@ public class ContainerLauncherContextImpl implements ContainerLauncherContext {
   private static final Logger LOG = LoggerFactory.getLogger(ContainerLauncherContextImpl.class);
   private final AppContext context;
   private final ContainerLauncherManager containerLauncherManager;
-  private final TaskCommunicatorManagerInterface tal;
+  private final TaskCommManagerInterface tal;
   private final UserPayload initialUserPayload;
   private final int containerLauncherIndex;
 
   public ContainerLauncherContextImpl(AppContext appContext, ContainerLauncherManager containerLauncherManager,
-                                      TaskCommunicatorManagerInterface tal,
+                                      TaskCommManagerInterface tal,
                                       UserPayload initialUserPayload, int containerLauncherIndex) {
     Objects.requireNonNull(appContext, "AppContext cannot be null");
     Objects.requireNonNull(appContext, "ContainerLauncherManager cannot be null");

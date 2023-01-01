@@ -66,7 +66,7 @@ import org.apache.tez.dag.api.oldrecords.TaskReport;
 import org.apache.tez.dag.api.oldrecords.TaskState;
 import org.apache.tez.dag.app.AppContext;
 import org.apache.tez.dag.app.ContainerContext;
-import org.apache.tez.dag.app.TaskCommunicatorManagerInterface;
+import org.apache.tez.dag.app.TaskCommManagerInterface;
 import org.apache.tez.dag.app.RecoveryParser.TaskRecoveryData;
 import org.apache.tez.dag.app.TaskHeartbeatHandler;
 import org.apache.tez.dag.app.dag.StateChangeNotifier;
@@ -120,7 +120,7 @@ public class TaskImpl implements Task, EventHandler<TaskEvent> {
             .getProperty("line.separator");
 
     protected final Configuration conf;
-    protected final TaskCommunicatorManagerInterface taskCommunicatorManagerInterface;
+    protected final TaskCommManagerInterface taskCommManagerInterface;
     protected final TaskHeartbeatHandler taskHeartbeatHandler;
     protected final EventHandler eventHandler;
     private final TezTaskID taskId;
@@ -368,7 +368,7 @@ public class TaskImpl implements Task, EventHandler<TaskEvent> {
 
     public TaskImpl(TezVertexID vertexId, int taskIndex,
                     EventHandler eventHandler, Configuration conf,
-                    TaskCommunicatorManagerInterface taskCommunicatorManagerInterface,
+                    TaskCommManagerInterface taskCommManagerInterface,
                     Clock clock, TaskHeartbeatHandler thh, AppContext appContext,
                     boolean leafVertex, Resource resource,
                     ContainerContext containerContext,
@@ -383,7 +383,7 @@ public class TaskImpl implements Task, EventHandler<TaskEvent> {
         maxFailedAttempts = vertex.getVertexConfig().getMaxFailedTaskAttempts();
         maxAttempts = vertex.getVertexConfig().getMaxTaskAttempts();
         taskId = TezTaskID.getInstance(vertexId, taskIndex);
-        this.taskCommunicatorManagerInterface = taskCommunicatorManagerInterface;
+        this.taskCommManagerInterface = taskCommManagerInterface;
         this.taskHeartbeatHandler = thh;
         this.eventHandler = eventHandler;
         this.appContext = appContext;
@@ -753,7 +753,7 @@ public class TaskImpl implements Task, EventHandler<TaskEvent> {
                 baseTaskSpec.getInputs(), baseTaskSpec.getOutputs(), baseTaskSpec.getGroupInputs(),
                 baseTaskSpec.getTaskConf());
         return new TaskAttemptImpl(attemptId, eventHandler,
-                taskCommunicatorManagerInterface, conf, clock, taskHeartbeatHandler, appContext,
+                taskCommManagerInterface, conf, clock, taskHeartbeatHandler, appContext,
                 (failedAttempts > 0), taskResource, containerContext, leafVertex, this,
                 locationHint, taskSpec, schedulingCausalTA);
     }

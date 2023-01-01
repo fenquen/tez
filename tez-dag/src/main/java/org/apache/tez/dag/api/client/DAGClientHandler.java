@@ -48,15 +48,15 @@ public class DAGClientHandler {
 
     public DAGClientHandler(DAGAppMaster dagAppMaster) {
         this.dagAppMaster = dagAppMaster;
-        this.lastHeartbeatTime = new AtomicLong(dagAppMaster.getContext().getClock().getTime());
+        this.lastHeartbeatTime = new AtomicLong(dagAppMaster.getAppContext().getClock().getTime());
     }
 
     private DAG getCurrentDAG() {
-        return dagAppMaster.getContext().getCurrentDAG();
+        return dagAppMaster.getAppContext().getCurrentDAG();
     }
 
     private Set<String> getAllDagIDs() {
-        return dagAppMaster.getContext().getAllDAGIDs();
+        return dagAppMaster.getAppContext().getAllDAGIDs();
     }
 
     public List<String> getAllDAGs() throws TezException {
@@ -179,7 +179,7 @@ public class DAGClientHandler {
     }
 
     public void updateLastHeartbeatTime() {
-        lastHeartbeatTime.set(dagAppMaster.getContext().getClock().getTime());
+        lastHeartbeatTime.set(dagAppMaster.getAppContext().getClock().getTime());
     }
 
     public long getLastHeartbeatTime() {

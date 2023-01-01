@@ -45,7 +45,6 @@ import org.apache.hadoop.yarn.api.records.LocalResourceVisibility;
 import org.apache.hadoop.yarn.api.records.URL;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.tez.common.counters.AggregateFrameworkCounter;
 import org.apache.tez.common.counters.AggregateTezCounterDelegate;
 import org.apache.tez.common.counters.CounterGroup;
 import org.apache.tez.common.counters.DAGCounter;
@@ -206,7 +205,7 @@ public class TestMockDAGAppMaster {
     DAGClient dagClient = tezClient.submitDAG(dag);
     mockLauncher.waitTillContainersLaunched();
     ContainerData cData = mockLauncher.getContainers().values().iterator().next();
-    DAGImpl dagImpl = (DAGImpl) mockApp.getContext().getCurrentDAG();
+    DAGImpl dagImpl = (DAGImpl) mockApp.getAppContext().getCurrentDAG();
     mockApp.getTaskSchedulerManager().preemptContainer(0, cData.cId);
     
     mockLauncher.startScheduling(true);
@@ -255,7 +254,7 @@ public class TestMockDAGAppMaster {
 
     DAGClient dagClient = tezClient.submitDAG(dag);
     mockLauncher.waitTillContainersLaunched();
-    DAGImpl dagImpl = (DAGImpl) mockApp.getContext().getCurrentDAG();
+    DAGImpl dagImpl = (DAGImpl) mockApp.getAppContext().getCurrentDAG();
     mockLauncher.startScheduling(true);
     dagClient.waitForCompletion();
     Assert.assertEquals(DAGStatus.State.SUCCEEDED, dagClient.getDAGStatus(null).getState());
@@ -391,7 +390,7 @@ public class TestMockDAGAppMaster {
 
     DAGClient dagClient = tezClient.submitDAG(dag);
     mockLauncher.waitTillContainersLaunched();
-    DAGImpl dagImpl = (DAGImpl) mockApp.getContext().getCurrentDAG();
+    DAGImpl dagImpl = (DAGImpl) mockApp.getAppContext().getCurrentDAG();
     mockLauncher.startScheduling(true);
     dagClient.waitForCompletion();
     Assert.assertEquals(DAGStatus.State.SUCCEEDED, dagClient.getDAGStatus(null).getState());
@@ -517,7 +516,7 @@ public class TestMockDAGAppMaster {
     mockApp.doSleep = false;
     DAGClient dagClient = tezClient.submitDAG(dag);
     mockLauncher.waitTillContainersLaunched();
-    DAGImpl dagImpl = (DAGImpl) mockApp.getContext().getCurrentDAG();
+    DAGImpl dagImpl = (DAGImpl) mockApp.getAppContext().getCurrentDAG();
     mockLauncher.startScheduling(true);
     DAGStatus status = dagClient.waitForCompletion();
     Assert.assertEquals(DAGStatus.State.SUCCEEDED, status.getState());
@@ -599,7 +598,7 @@ public class TestMockDAGAppMaster {
     mockApp.doSleep = false;
     DAGClient dagClient = tezClient.submitDAG(dag);
     mockLauncher.waitTillContainersLaunched();
-    DAGImpl dagImpl = (DAGImpl) mockApp.getContext().getCurrentDAG();
+    DAGImpl dagImpl = (DAGImpl) mockApp.getAppContext().getCurrentDAG();
     mockLauncher.startScheduling(true);
     DAGStatus status = dagClient.waitForCompletion();
     Assert.assertEquals(DAGStatus.State.SUCCEEDED, status.getState());
@@ -704,13 +703,13 @@ public class TestMockDAGAppMaster {
     mockApp.doSleep = false;
     DAGClient dagClient = tezClient.submitDAG(dag);
     mockLauncher.waitTillContainersLaunched();
-    DAGImpl dagImpl = (DAGImpl) mockApp.getContext().getCurrentDAG();
+    DAGImpl dagImpl = (DAGImpl) mockApp.getAppContext().getCurrentDAG();
     mockLauncher.startScheduling(true);
     DAGStatus status = dagClient.waitForCompletion();
     Assert.assertEquals(DAGStatus.State.SUCCEEDED, status.getState());
     
     // verify that the values have been correct aggregated
-    for (org.apache.tez.dag.app.dag.Vertex v : dagImpl.getVertices().values()) {
+    for (org.apache.tez.dag.app.dag.Vertex v : dagImpl.getVertexId_vertex().values()) {
       VertexStatistics vStats = v.getStatistics();
       if (v.getName().equals(vAName)) {
         Assert.assertEquals(3, vStats.getOutputStatistics(vBName).getDataSize());
@@ -788,7 +787,7 @@ public class TestMockDAGAppMaster {
     mockApp.doSleep = false;
     DAGClient dagClient = tezClient.submitDAG(dag);
     mockLauncher.waitTillContainersLaunched();
-    DAGImpl dagImpl = (DAGImpl) mockApp.getContext().getCurrentDAG();
+    DAGImpl dagImpl = (DAGImpl) mockApp.getAppContext().getCurrentDAG();
     mockLauncher.startScheduling(true);
     DAGStatus status = dagClient.waitForCompletion();
     Assert.assertEquals(DAGStatus.State.SUCCEEDED, status.getState());
@@ -877,7 +876,7 @@ public class TestMockDAGAppMaster {
     mockApp.doSleep = false;
     DAGClient dagClient = tezClient.submitDAG(dag);
     mockLauncher.waitTillContainersLaunched();
-    DAGImpl dagImpl = (DAGImpl) mockApp.getContext().getCurrentDAG();
+    DAGImpl dagImpl = (DAGImpl) mockApp.getAppContext().getCurrentDAG();
     mockLauncher.startScheduling(true);
     DAGStatus status = dagClient.waitForCompletion();
     Assert.assertEquals(DAGStatus.State.SUCCEEDED, status.getState());
@@ -945,7 +944,7 @@ public class TestMockDAGAppMaster {
     while(!mockApp.getShutdownHandler().wasShutdownInvoked()) {
       Thread.sleep(100);
     }
-    Assert.assertEquals(DAGState.RUNNING, mockApp.getContext().getCurrentDAG().getState());
+    Assert.assertEquals(DAGState.RUNNING, mockApp.getAppContext().getCurrentDAG().getState());
   }
 
   @Test (timeout = 10000)
@@ -1221,7 +1220,7 @@ public class TestMockDAGAppMaster {
     while(!mockApp.getShutdownHandler().wasShutdownInvoked()) {
       Thread.sleep(100);
     }
-    Assert.assertEquals(DAGState.SUCCEEDED, mockApp.getContext().getCurrentDAG().getState());
+    Assert.assertEquals(DAGState.SUCCEEDED, mockApp.getAppContext().getCurrentDAG().getState());
     Assert.assertEquals(DAGAppMasterState.FAILED, mockApp.getState());
     Assert.assertTrue(StringUtils.join(mockApp.getDiagnostics(),",")
         .contains("Recovery had a fatal error, shutting down session after" +

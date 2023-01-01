@@ -53,8 +53,7 @@ public class ContainerHeartbeatHandler extends
     @SuppressWarnings("unchecked")
     @Override
     protected void handleTimeOut(ContainerId containerId) {
-        eventHandler.handle(new AMContainerEvent(containerId,
-                AMContainerEventType.C_TIMED_OUT));
+        eventHandler.handle(new AMContainerEvent(containerId, AMContainerEventType.C_TIMED_OUT));
     }
 
 }

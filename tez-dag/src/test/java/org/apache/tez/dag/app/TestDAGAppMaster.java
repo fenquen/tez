@@ -456,7 +456,7 @@ public class TestDAGAppMaster {
     Vertex mockVertex = mock(Vertex.class);
     when(mockVertex.getProgress()).thenReturn(Float.NaN);
     map.put(mockVertexID, mockVertex);
-    when(dag.getVertices()).thenReturn(map);
+    when(dag.getVertexId_vertex()).thenReturn(map);
     when(dag.getTotalVertices()).thenReturn(1);
     Assert.assertEquals("Progress was NaN and should be reported as 0",
         0, am.getProgress(), 0);

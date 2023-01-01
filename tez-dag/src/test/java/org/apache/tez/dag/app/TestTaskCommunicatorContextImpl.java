@@ -39,7 +39,7 @@ public class TestTaskCommunicatorContextImpl {
   public void testIsKnownContainer() {
     AppContext appContext = mock(AppContext.class);
     when(appContext.getAMConf()).thenReturn(new Configuration());
-    TaskCommunicatorManager tal = mock(TaskCommunicatorManager.class);
+    TaskCommManager tal = mock(TaskCommManager.class);
 
     AMContainerMap amContainerMap = new AMContainerMap(mock(ContainerHeartbeatHandler.class), tal, mock(
         ContainerSignatureMatcher.class), appContext);

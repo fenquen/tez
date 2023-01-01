@@ -261,8 +261,8 @@ public class TestTaskCommunicatorManager {
     list.add(namedEntityDescriptor);
 
 
-    TaskCommunicatorManager taskCommManager =
-        new TaskCommunicatorManager(appContext, mock(TaskHeartbeatHandler.class),
+    TaskCommManager taskCommManager =
+        new TaskCommManager(appContext, mock(TaskHeartbeatHandler.class),
             mock(ContainerHeartbeatHandler.class), list);
     try {
       taskCommManager.init(new Configuration());
@@ -321,8 +321,8 @@ public class TestTaskCommunicatorManager {
 
     Configuration conf = new Configuration(false);
 
-    TaskCommunicatorManager taskCommunicatorManager =
-        new TaskCommunicatorManager(taskCommunicator, appContext, mock(TaskHeartbeatHandler.class),
+    TaskCommManager taskCommunicatorManager =
+        new TaskCommManager(taskCommunicator, appContext, mock(TaskHeartbeatHandler.class),
             mock(ContainerHeartbeatHandler.class));
     try {
       taskCommunicatorManager.init(conf);
@@ -387,7 +387,7 @@ public class TestTaskCommunicatorManager {
     }
   }
 
-  static class TaskCommManagerForMultipleCommTest extends TaskCommunicatorManager {
+  static class TaskCommManagerForMultipleCommTest extends TaskCommManager {
 
     // All variables setup as static since methods being overridden are invoked by the ContainerLauncherRouter ctor,
     // and regular variables will not be initialized at this point.

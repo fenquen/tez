@@ -23,8 +23,8 @@ import org.apache.tez.common.TezAbstractEvent;
 
 public class DAGAppMasterEvent extends TezAbstractEvent<DAGAppMasterEventType> {
 
-    public DAGAppMasterEvent(DAGAppMasterEventType type) {
-        super(type);
+    public DAGAppMasterEvent(DAGAppMasterEventType dagAppMasterEventType) {
+        super(dagAppMasterEventType);
     }
 
 }

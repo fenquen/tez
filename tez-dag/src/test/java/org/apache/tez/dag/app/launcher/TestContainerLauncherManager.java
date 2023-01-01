@@ -52,7 +52,7 @@ import org.apache.tez.dag.api.TezConstants;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.UserPayload;
 import org.apache.tez.dag.app.AppContext;
-import org.apache.tez.dag.app.TaskCommunicatorManagerInterface;
+import org.apache.tez.dag.app.TaskCommManagerInterface;
 import org.apache.tez.dag.app.dag.DAG;
 import org.apache.tez.dag.app.dag.event.DAGAppMasterEventType;
 import org.apache.tez.dag.app.dag.event.DAGAppMasterEventUserServiceFatalError;
@@ -85,7 +85,7 @@ public class TestContainerLauncherManager {
   public void testNoLaunchersSpecified() throws IOException, TezException {
 
     AppContext appContext = mock(AppContext.class);
-    TaskCommunicatorManagerInterface tal = mock(TaskCommunicatorManagerInterface.class);
+    TaskCommManagerInterface tal = mock(TaskCommManagerInterface.class);
 
     try {
 
@@ -102,7 +102,7 @@ public class TestContainerLauncherManager {
     Configuration conf = new Configuration(false);
 
     AppContext appContext = mock(AppContext.class);
-    TaskCommunicatorManagerInterface tal = mock(TaskCommunicatorManagerInterface.class);
+    TaskCommManagerInterface tal = mock(TaskCommManagerInterface.class);
 
     String customLauncherName = "customLauncher";
     List<NamedEntityDescriptor> launcherDescriptors = new LinkedList<>();
@@ -138,7 +138,7 @@ public class TestContainerLauncherManager {
     UserPayload userPayload = TezUtils.createUserPayloadFromConf(conf);
 
     AppContext appContext = mock(AppContext.class);
-    TaskCommunicatorManagerInterface tal = mock(TaskCommunicatorManagerInterface.class);
+    TaskCommManagerInterface tal = mock(TaskCommManagerInterface.class);
 
     String customLauncherName = "customLauncher";
     List<NamedEntityDescriptor> launcherDescriptors = new LinkedList<>();
@@ -181,7 +181,7 @@ public class TestContainerLauncherManager {
     UserPayload userPayload = TezUtils.createUserPayloadFromConf(conf);
 
     AppContext appContext = mock(AppContext.class);
-    TaskCommunicatorManagerInterface tal = mock(TaskCommunicatorManagerInterface.class);
+    TaskCommManagerInterface tal = mock(TaskCommManagerInterface.class);
 
     String customLauncherName = "customLauncher";
     List<NamedEntityDescriptor> launcherDescriptors = new LinkedList<>();
@@ -269,7 +269,7 @@ public class TestContainerLauncherManager {
     List<NamedEntityDescriptor> list = new LinkedList<>();
     list.add(taskCommDescriptor);
     ContainerLauncherManager containerLauncherManager =
-        new ContainerLauncherManager(appContext, mock(TaskCommunicatorManagerInterface.class), "",
+        new ContainerLauncherManager(appContext, mock(TaskCommManagerInterface.class), "",
             list, false);
 
     try {
@@ -415,12 +415,12 @@ public class TestContainerLauncherManager {
     }
 
     public ContainerLaucherRouterForMultipleLauncherTest(AppContext context,
-                                                         TaskCommunicatorManagerInterface taskCommunicatorManagerInterface,
+                                                         TaskCommManagerInterface taskCommManagerInterface,
                                                          String workingDirectory,
                                                          List<NamedEntityDescriptor> containerLauncherDescriptors,
                                                          boolean isPureLocalMode) throws
         UnknownHostException, TezException {
-      super(context, taskCommunicatorManagerInterface, workingDirectory,
+      super(context, taskCommManagerInterface, workingDirectory,
           containerLauncherDescriptors, isPureLocalMode);
     }
 
@@ -428,7 +428,7 @@ public class TestContainerLauncherManager {
     ContainerLauncher createContainerLauncher(NamedEntityDescriptor containerLauncherDescriptor,
                                               AppContext context,
                                               ContainerLauncherContext containerLauncherContext,
-                                              TaskCommunicatorManagerInterface taskCommunicatorManagerInterface,
+                                              TaskCommManagerInterface taskCommManagerInterface,
                                               String workingDirectory,
                                               int containerLauncherIndex,
                                               boolean isPureLocalMode) throws TezException {
@@ -439,7 +439,7 @@ public class TestContainerLauncherManager {
       containerLauncherContexts.add(containerLauncherContext);
       return super
           .createContainerLauncher(containerLauncherDescriptor, context, containerLauncherContext,
-              taskCommunicatorManagerInterface, workingDirectory, containerLauncherIndex, isPureLocalMode);
+                  taskCommManagerInterface, workingDirectory, containerLauncherIndex, isPureLocalMode);
     }
 
     @Override
@@ -453,7 +453,7 @@ public class TestContainerLauncherManager {
     @Override
     ContainerLauncher createUberContainerLauncher(ContainerLauncherContext containerLauncherContext,
                                                   AppContext context,
-                                                  TaskCommunicatorManagerInterface taskCommunicatorManagerInterface,
+                                                  TaskCommManagerInterface taskCommManagerInterface,
                                                   String workingDirectory,
                                                   boolean isPureLocalMode) {
       uberContainerLauncherCreated.set(true);

@@ -309,7 +309,7 @@ public class TestSpeculation {
       MockTezClient tezClient = createTezSession();
 
       DAGClient dagClient = tezClient.submitDAG(dag);
-      DAGImpl dagImpl = (DAGImpl) mockApp.getContext().getCurrentDAG();
+      DAGImpl dagImpl = (DAGImpl) mockApp.getAppContext().getCurrentDAG();
       TezVertexID vertexId = TezVertexID.getInstance(dagImpl.getID(), 0);
       // original attempt is killed and speculative one is successful
       TezTaskAttemptID killedTaId =
@@ -350,7 +350,7 @@ public class TestSpeculation {
 
     MockTezClient tezClient = createTezSession();
     DAGClient dagClient = tezClient.submitDAG(dag);
-    DAGImpl dagImpl = (DAGImpl) mockApp.getContext().getCurrentDAG();
+    DAGImpl dagImpl = (DAGImpl) mockApp.getAppContext().getCurrentDAG();
     TezVertexID vertexId = TezVertexID.getInstance(dagImpl.getID(), 0);
     // original attempt is killed and speculative one is successful
     TezTaskAttemptID killedTaId =
@@ -444,7 +444,7 @@ public class TestSpeculation {
     MockTezClient tezClient = createTezSession();
 
     DAGClient dagClient = tezClient.submitDAG(dag);
-    DAGImpl dagImpl = (DAGImpl) mockApp.getContext().getCurrentDAG();
+    DAGImpl dagImpl = (DAGImpl) mockApp.getAppContext().getCurrentDAG();
     TezVertexID vertexIdSpec = dagImpl.getVertex(vNameSpec).getVertexId();
     TezVertexID vertexIdNoSpec = dagImpl.getVertex(vNameNoSpec).getVertexId();
     // original attempt is killed and speculative one is successful
@@ -494,7 +494,7 @@ public class TestSpeculation {
     MockTezClient tezClient = createTezSession();
     
     DAGClient dagClient = tezClient.submitDAG(dag);
-    DAGImpl dagImpl = (DAGImpl) mockApp.getContext().getCurrentDAG();
+    DAGImpl dagImpl = (DAGImpl) mockApp.getAppContext().getCurrentDAG();
     TezVertexID vertexId = TezVertexID.getInstance(dagImpl.getID(), 0);
     // original attempt is successful and speculative one is killed
     TezTaskAttemptID successTaId = TezTaskAttemptID.getInstance(TezTaskID.getInstance(vertexId, 0), 0);

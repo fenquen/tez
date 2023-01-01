@@ -97,7 +97,7 @@ import org.apache.tez.dag.api.records.DAGProtos.TezEntityDescriptorProto;
 import org.apache.tez.dag.api.records.DAGProtos.VertexPlan;
 import org.apache.tez.dag.app.AppContext;
 import org.apache.tez.dag.app.ClusterInfo;
-import org.apache.tez.dag.app.TaskCommunicatorManagerInterface;
+import org.apache.tez.dag.app.TaskCommManagerInterface;
 import org.apache.tez.dag.app.TaskHeartbeatHandler;
 import org.apache.tez.dag.app.dag.DAGScheduler;
 import org.apache.tez.dag.app.dag.DAGState;
@@ -175,7 +175,7 @@ public class TestDAGImpl {
   private TaskEventDispatcher taskEventDispatcher;
   private VertexEventDispatcher vertexEventDispatcher;
   private DagEventDispatcher dagEventDispatcher;
-  private TaskCommunicatorManagerInterface taskCommunicatorManagerInterface;
+  private TaskCommManagerInterface taskCommManagerInterface;
   private TaskHeartbeatHandler thh;
   private Clock clock = new SystemClock();
   private DAGFinishEventHandler dagFinishEventHandler;
@@ -877,7 +877,7 @@ public class TestDAGImpl {
     doReturn(aclManager).when(appContext).getAMACLManager();
     doReturn(defaultShim).when(appContext).getHadoopShim();
     dag = new DAGImpl(dagId, conf, dagPlan,
-        dispatcher.getEventHandler(), taskCommunicatorManagerInterface,
+        dispatcher.getEventHandler(), taskCommManagerInterface,
         fsTokens, clock, "user", thh, appContext);
     dag.entityUpdateTracker = new StateChangeNotifierForTest(dag);
     doReturn(dag).when(appContext).getCurrentDAG();
@@ -890,7 +890,7 @@ public class TestDAGImpl {
     mrrDagId = TezDAGID.getInstance(appAttemptId.getApplicationId(), 2);
     mrrDagPlan = createTestMRRDAGPlan();
     mrrDag = new DAGImpl(mrrDagId, conf, mrrDagPlan,
-        dispatcher.getEventHandler(), taskCommunicatorManagerInterface,
+        dispatcher.getEventHandler(), taskCommManagerInterface,
         fsTokens, clock, "user", thh,
         mrrAppContext);
     mrrDag.entityUpdateTracker = new StateChangeNotifierForTest(mrrDag);
@@ -908,7 +908,7 @@ public class TestDAGImpl {
     groupDagId = TezDAGID.getInstance(appAttemptId.getApplicationId(), 3);
     groupDagPlan = createGroupDAGPlan();
     groupDag = new DAGImpl(groupDagId, conf, groupDagPlan,
-        dispatcher.getEventHandler(), taskCommunicatorManagerInterface,
+        dispatcher.getEventHandler(), taskCommManagerInterface,
         fsTokens, clock, "user", thh,
         groupAppContext);
     groupDag.entityUpdateTracker = new StateChangeNotifierForTest(groupDag);
@@ -979,7 +979,7 @@ public class TestDAGImpl {
     doReturn(aclManager).when(dagWithCustomEdgeAppContext).getAMACLManager();
     when(dagWithCustomEdgeAppContext.getHadoopShim()).thenReturn(defaultShim);
     dagWithCustomEdge = new DAGImpl(dagWithCustomEdgeId, conf, dagPlanWithCustomEdge,
-        dispatcher.getEventHandler(), taskCommunicatorManagerInterface,
+        dispatcher.getEventHandler(), taskCommManagerInterface,
         fsTokens, clock, "user", thh, dagWithCustomEdgeAppContext);
     dagWithCustomEdge.entityUpdateTracker = new StateChangeNotifierForTest(dagWithCustomEdge);
     doReturn(conf).when(dagWithCustomEdgeAppContext).getAMConf();
@@ -1073,7 +1073,7 @@ public class TestDAGImpl {
   public void testNonExistEdgeManagerPlugin() {
     dagPlan = createDAGWithNonExistEdgeManager();
     dag = new DAGImpl(dagId, conf, dagPlan,
-        dispatcher.getEventHandler(),  taskCommunicatorManagerInterface,
+        dispatcher.getEventHandler(), taskCommManagerInterface,
         fsTokens, clock, "user", thh, appContext);
     dag.entityUpdateTracker = new StateChangeNotifierForTest(dag);
     doReturn(dag).when(appContext).getCurrentDAG();
@@ -1089,7 +1089,7 @@ public class TestDAGImpl {
   public void testNonExistDAGScheduler() {
     conf.set(TezConfiguration.TEZ_AM_DAG_SCHEDULER_CLASS, "non-exist-dag-scheduler");
     dag = new DAGImpl(dagId, conf, dagPlan,
-        dispatcher.getEventHandler(),  taskCommunicatorManagerInterface,
+        dispatcher.getEventHandler(), taskCommManagerInterface,
         fsTokens, clock, "user", thh, appContext);
     dag.entityUpdateTracker = new StateChangeNotifierForTest(dag);
     doReturn(dag).when(appContext).getCurrentDAG();
@@ -1405,7 +1405,7 @@ public class TestDAGImpl {
     }
     
     // no commit yet
-    for (Vertex v : mrrDag.vertices.values()) {
+    for (Vertex v : mrrDag.vertexId_vertex.values()) {
       for (OutputCommitter c : v.getOutputCommitters().values()) {
         CountingOutputCommitter committer= (CountingOutputCommitter) c;
         Assert.assertEquals(0, committer.abortCounter);
@@ -1424,7 +1424,7 @@ public class TestDAGImpl {
     Assert.assertEquals(3, mrrDag.getSuccessfulVertices());
     Assert.assertEquals(DAGState.SUCCEEDED, mrrDag.getState());
     
-    for (Vertex vertex : mrrDag.vertices.values()) {
+    for (Vertex vertex : mrrDag.vertexId_vertex.values()) {
       for (OutputCommitter c : vertex.getOutputCommitters().values()) {
         CountingOutputCommitter committer= (CountingOutputCommitter) c;
         Assert.assertEquals(0, committer.abortCounter);
@@ -1474,7 +1474,7 @@ public class TestDAGImpl {
     }
     
     // no commit yet
-    for (Vertex v : mrrDag.vertices.values()) {
+    for (Vertex v : mrrDag.vertexId_vertex.values()) {
       for (OutputCommitter c : v.getOutputCommitters().values()) {
         CountingOutputCommitter committer= (CountingOutputCommitter) c;
         Assert.assertEquals(0, committer.abortCounter);
@@ -1494,7 +1494,7 @@ public class TestDAGImpl {
     Assert.assertEquals(DAGState.FAILED, mrrDag.getState());
     Assert.assertEquals(DAGTerminationCause.COMMIT_FAILURE, mrrDag.getTerminationCause());
     
-    for (Vertex vertex : mrrDag.vertices.values()) {
+    for (Vertex vertex : mrrDag.vertexId_vertex.values()) {
       for (OutputCommitter c : vertex.getOutputCommitters().values()) {
         CountingOutputCommitter committer= (CountingOutputCommitter) c;
         Assert.assertEquals(1, committer.abortCounter);
@@ -1522,7 +1522,7 @@ public class TestDAGImpl {
     }
     
     // no commit yet
-    for (Vertex v : mrrDag.vertices.values()) {
+    for (Vertex v : mrrDag.vertexId_vertex.values()) {
       for (OutputCommitter c : v.getOutputCommitters().values()) {
         CountingOutputCommitter committer= (CountingOutputCommitter) c;
         Assert.assertEquals(0, committer.abortCounter);
@@ -1540,7 +1540,7 @@ public class TestDAGImpl {
     Assert.assertEquals(VertexState.ERROR, v.getState());
     Assert.assertEquals(DAGState.ERROR, mrrDag.getState());
     
-    for (Vertex vertex : mrrDag.vertices.values()) {
+    for (Vertex vertex : mrrDag.vertexId_vertex.values()) {
       for (OutputCommitter c : vertex.getOutputCommitters().values()) {
         CountingOutputCommitter committer= (CountingOutputCommitter) c;
         Assert.assertEquals(1, committer.abortCounter);
@@ -1586,7 +1586,7 @@ public class TestDAGImpl {
     dispatcher.await();
     Assert.assertEquals(DAGState.ERROR, mrrDag.getState());
     
-    for (Vertex vertex : mrrDag.vertices.values()) {
+    for (Vertex vertex : mrrDag.vertexId_vertex.values()) {
       for (OutputCommitter c : vertex.getOutputCommitters().values()) {
         CountingOutputCommitter committer= (CountingOutputCommitter) c;
         if (vertex == errorVertex) {
@@ -1751,7 +1751,7 @@ public class TestDAGImpl {
     dispatcher.await();
 
     // All vertices except one succeed
-    for (int i = 0; i < dag.getVertices().size() - 1; ++i) {
+    for (int i = 0; i < dag.getVertexId_vertex().size() - 1; ++i) {
       dispatcher.getEventHandler().handle(new DAGEventVertexCompleted(
           TezVertexID.getInstance(dagId, i), VertexState.SUCCEEDED));
     }
@@ -1799,7 +1799,7 @@ public class TestDAGImpl {
     dispatcher.await();
 
     // All vertices except one succeed
-    for (int i = 0; i < dag.getVertices().size() - 1; ++i) {
+    for (int i = 0; i < dag.getVertexId_vertex().size() - 1; ++i) {
       dispatcher.getEventHandler().handle(new DAGEventVertexCompleted(
           TezVertexID.getInstance(dagId, 0), VertexState.SUCCEEDED));
     }
@@ -1923,14 +1923,14 @@ public class TestDAGImpl {
     Assert.assertEquals(2, dag.getSuccessfulVertices());
 
     int killedCount = 0;
-    for (Map.Entry<TezVertexID, Vertex> vEntry : dag.getVertices().entrySet()) {
+    for (Map.Entry<TezVertexID, Vertex> vEntry : dag.getVertexId_vertex().entrySet()) {
       if (vEntry.getValue().getState() == VertexState.KILLED) {
         killedCount++;
       }
     }
     Assert.assertEquals(4, killedCount);
 
-    for (Vertex v : dag.getVertices().values()) {
+    for (Vertex v : dag.getVertexId_vertex().values()) {
       Assert.assertEquals(VertexTerminationCause.DAG_TERMINATED, v.getTerminationCause());
     }
 
@@ -1944,7 +1944,7 @@ public class TestDAGImpl {
         TezConfiguration.TEZ_AM_COMMIT_ALL_OUTPUTS_ON_DAG_SUCCESS,
         false);
     dag = spy(new DAGImpl(dagId, conf, dagPlan,
-        dispatcher.getEventHandler(), taskCommunicatorManagerInterface,
+        dispatcher.getEventHandler(), taskCommManagerInterface,
         fsTokens, clock, "user", thh, appContext));
     StateMachineTez<DAGState, DAGEventType, DAGEvent, DAGImpl> spyStateMachine =
         spy(new StateMachineTez<DAGState, DAGEventType, DAGEvent, DAGImpl>(
@@ -2019,7 +2019,7 @@ public class TestDAGImpl {
     dispatcher.await();
 
     int killedCount = 0;
-    for (Map.Entry<TezVertexID, Vertex> vEntry : dag.getVertices().entrySet()) {
+    for (Map.Entry<TezVertexID, Vertex> vEntry : dag.getVertexId_vertex().entrySet()) {
       if (vEntry.getValue().getState() == VertexState.KILLED) {
         killedCount++;
       }
@@ -2028,7 +2028,7 @@ public class TestDAGImpl {
 
     Assert.assertEquals(terminationCause, dag.getTerminationCause());
     Assert.assertEquals(2, dag.getSuccessfulVertices());
-    for (Vertex v : dag.getVertices().values()) {
+    for (Vertex v : dag.getVertexId_vertex().values()) {
       Assert.assertEquals(VertexTerminationCause.DAG_TERMINATED, v.getTerminationCause());
     }
     Assert.assertEquals(1, dagFinishEventHandler.dagFinishEvents);

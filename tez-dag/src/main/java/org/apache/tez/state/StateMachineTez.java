@@ -26,43 +26,42 @@ import org.apache.hadoop.yarn.state.StateMachine;
 import org.apache.tez.dag.records.TezID;
 
 public class StateMachineTez<STATE extends Enum<STATE>, EVENTTYPE extends Enum<EVENTTYPE>, EVENT, OPERAND>
-    implements StateMachine<STATE, EVENTTYPE, EVENT> {
+        implements StateMachine<STATE, EVENTTYPE, EVENT> {
 
-  private final Map<STATE, OnStateChangedCallback> callbackMap =
-      new HashMap<STATE, OnStateChangedCallback>();
-  private final OPERAND operand;
+    private final Map<STATE, OnStateChangedCallback> callbackMap =
+            new HashMap<STATE, OnStateChangedCallback>();
+    private final OPERAND operand;
 
-  private final StateMachine<STATE, EVENTTYPE, EVENT> realStatemachine;
+    private final StateMachine<STATE, EVENTTYPE, EVENT> realStatemachine;
 
-  @SuppressWarnings("unchecked")
-  public StateMachineTez(StateMachine sm, OPERAND operand) {
-    this.realStatemachine = sm;
-    this.operand = operand;
-  }
-
-  public StateMachineTez registerStateEnteredCallback(STATE state,
-                                                      OnStateChangedCallback callback) {
-    callbackMap.put(state, callback);
-    return this;
-  }
-
-  @Override
-  public STATE getCurrentState() {
-    return realStatemachine.getCurrentState();
-  }
-
-  @SuppressWarnings("unchecked")
-  @Override
-  public STATE doTransition(EVENTTYPE eventType, EVENT event) throws
-      InvalidStateTransitonException {
-    STATE oldState = realStatemachine.getCurrentState();
-    STATE newState = realStatemachine.doTransition(eventType, event);
-    if (newState != oldState) {
-      OnStateChangedCallback callback = callbackMap.get(newState);
-      if (callback != null) {
-        callback.onStateChanged(operand, newState);
-      }
+    @SuppressWarnings("unchecked")
+    public StateMachineTez(StateMachine sm, OPERAND operand) {
+        this.realStatemachine = sm;
+        this.operand = operand;
     }
-    return newState;
-  }
+
+    public StateMachineTez registerStateEnteredCallback(STATE state,
+                                                        OnStateChangedCallback callback) {
+        callbackMap.put(state, callback);
+        return this;
+    }
+
+    @Override
+    public STATE getCurrentState() {
+        return realStatemachine.getCurrentState();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public STATE doTransition(EVENTTYPE eventType, EVENT event) throws InvalidStateTransitonException {
+        STATE oldState = realStatemachine.getCurrentState();
+        STATE newState = realStatemachine.doTransition(eventType, event);
+        if (newState != oldState) {
+            OnStateChangedCallback callback = callbackMap.get(newState);
+            if (callback != null) {
+                callback.onStateChanged(operand, newState);
+            }
+        }
+        return newState;
+    }
 }

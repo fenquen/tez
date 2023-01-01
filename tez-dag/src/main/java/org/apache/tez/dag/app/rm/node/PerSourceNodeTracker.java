@@ -33,7 +33,7 @@ public class PerSourceNodeTracker {
   static final Logger LOG = LoggerFactory.getLogger(PerSourceNodeTracker.class);
 
   private final int sourceId;
-  private final ConcurrentHashMap<NodeId, AMNode> nodeMap;
+  private final ConcurrentHashMap<NodeId, AMNodeEventHandler> nodeMap;
   private final ConcurrentHashMap<String, Set<NodeId>> blacklistMap;
 
   @SuppressWarnings("rawtypes")
@@ -69,14 +69,14 @@ public class PerSourceNodeTracker {
 
 
   public void nodeSeen(NodeId nodeId) {
-    if (nodeMap.putIfAbsent(nodeId, new AMNodeImpl(nodeId, sourceId, maxTaskFailuresPerNode,
+    if (nodeMap.putIfAbsent(nodeId, new AMNodeEventHandlerImpl(nodeId, sourceId, maxTaskFailuresPerNode,
         eventHandler, nodeBlacklistingEnabled, nodeUpdatesRescheduleEnabled,
         appContext)) == null) {
       LOG.info("Adding new node {} to nodeTracker {}", nodeId, sourceId);
     }
   }
 
-  public AMNode get(NodeId nodeId) {
+  public AMNodeEventHandler get(NodeId nodeId) {
     return nodeMap.get(nodeId);
   }
 
@@ -101,24 +101,24 @@ public class PerSourceNodeTracker {
         break;
       case N_TURNED_UNHEALTHY:
       case N_TURNED_HEALTHY:
-        AMNode amNode = nodeMap.get(nodeId);
-        if (amNode == null) {
+        AMNodeEventHandler amNodeEventHandler = nodeMap.get(nodeId);
+        if (amNodeEventHandler == null) {
           LOG.info("Ignoring RM Health Update for unknown node: " + nodeId);
           // This implies that the node exists on the cluster, but is not running a container for
           // this application.
         } else {
-          amNode.handle(rEvent);
+          amNodeEventHandler.handle(rEvent);
         }
         break;
       default:
-        amNode = nodeMap.get(nodeId);
-        amNode.handle(rEvent);
+        amNodeEventHandler = nodeMap.get(nodeId);
+        amNodeEventHandler.handle(rEvent);
     }
   }
 
-  boolean registerBadNodeAndShouldBlacklist(AMNode amNode) {
+  boolean registerBadNodeAndShouldBlacklist(AMNodeEventHandler amNodeEventHandler) {
     if (nodeBlacklistingEnabled) {
-      addToBlackList(amNode.getNodeId());
+      addToBlackList(amNodeEventHandler.getNodeId());
       computeIgnoreBlacklisting();
       return !ignoreBlacklisting;
     } else {
@@ -193,8 +193,8 @@ public class PerSourceNodeTracker {
   }
 
   public void dagComplete(DAG dag) {
-    for (AMNode amNode : nodeMap.values()) {
-      amNode.dagComplete(dag);
+    for (AMNodeEventHandler amNodeEventHandler : nodeMap.values()) {
+      amNodeEventHandler.dagComplete(dag);
     }
     // TODO TEZ-2337 Maybe reset failures from previous DAGs
   }

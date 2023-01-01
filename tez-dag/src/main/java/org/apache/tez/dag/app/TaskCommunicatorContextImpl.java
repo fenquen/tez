@@ -53,7 +53,7 @@ public class TaskCommunicatorContextImpl implements TaskCommunicatorContext, Ver
   // TODO TEZ-2003 (post) TEZ-2669 Propagate errors baack to the AM with proper error reporting
 
   private final AppContext context;
-  private final TaskCommunicatorManager taskCommunicatorManager;
+  private final TaskCommManager taskCommunicatorManager;
   private final int taskCommunicatorIndex;
   private final ReentrantReadWriteLock.ReadLock dagChangedReadLock;
   private final ReentrantReadWriteLock.WriteLock dagChangedWriteLock;
@@ -63,7 +63,7 @@ public class TaskCommunicatorContextImpl implements TaskCommunicatorContext, Ver
   DAG dag;
 
   public TaskCommunicatorContextImpl(AppContext appContext,
-                                     TaskCommunicatorManager taskCommunicatorManager,
+                                     TaskCommManager taskCommunicatorManager,
                                      UserPayload userPayload,
                                      int taskCommunicatorIndex) {
     this.context = appContext;

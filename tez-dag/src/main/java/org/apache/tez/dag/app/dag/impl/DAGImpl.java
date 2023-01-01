@@ -96,7 +96,7 @@ import org.apache.tez.dag.api.records.DAGProtos.PlanVertexGroupInfo;
 import org.apache.tez.dag.api.records.DAGProtos.VertexPlan;
 import org.apache.tez.dag.app.AppContext;
 import org.apache.tez.dag.app.RecoveryParser.VertexRecoveryData;
-import org.apache.tez.dag.app.TaskCommunicatorManagerInterface;
+import org.apache.tez.dag.app.TaskCommManagerInterface;
 import org.apache.tez.dag.app.RecoveryParser.DAGRecoveryData;
 import org.apache.tez.dag.app.TaskHeartbeatHandler;
 import org.apache.tez.dag.app.dag.DAG;
@@ -151,7 +151,8 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
-/** Implementation of Job interface. Maintains the state machines of Job.
+/**
+ * Implementation of Job interface. Maintains the state machines of Job.
  * The read and write calls use ReadWriteLock for concurrency.
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
@@ -173,7 +174,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
     private final Lock readLock;
     private final Lock writeLock;
     private final String dagName;
-    private final TaskCommunicatorManagerInterface taskCommunicatorManagerInterface;
+    private final TaskCommManagerInterface taskCommManagerInterface;
     private final TaskHeartbeatHandler taskHeartbeatHandler;
     private final Object tasksSyncHandle = new Object();
 
@@ -196,9 +197,9 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
     @VisibleForTesting
     StateChangeNotifier entityUpdateTracker;
 
-    volatile Map<TezVertexID, Vertex> vertices = new HashMap<>();
+    volatile Map<TezVertexID, Vertex> vertexId_vertex = new HashMap<>();
     @VisibleForTesting
-    Map<String, Edge> edges = new HashMap<String, Edge>();
+    Map<String, Edge> edgeId_edge = new HashMap<>();
     ArrayList<BitSet> vertexDescendants;
     private TezCounters dagCounters = new TezCounters();
     private Object fullCountersLock = new Object();
@@ -247,9 +248,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
 
     private final MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
 
-    protected static final
-    StateMachineFactory<DAGImpl, DAGState, DAGEventType, DAGEvent>
-            stateMachineFactory
+    protected static final StateMachineFactory<DAGImpl, DAGState, DAGEventType, DAGEvent> stateMachineFactory
             = new StateMachineFactory<DAGImpl, DAGState, DAGEventType, DAGEvent>
             (DAGState.NEW)
 
@@ -447,7 +446,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
             // create the topology tables
             .installTopology();
 
-    private final StateMachineTez<DAGState, DAGEventType, DAGEvent, DAGImpl> stateMachine;
+    private final StateMachineTez<DAGState, DAGEventType, DAGEvent, DAGImpl> stateMachineTez;
 
     //changing fields while the job is running
     @VisibleForTesting
@@ -507,7 +506,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
                    Configuration amConf,
                    DAGPlan dagPlan,
                    EventHandler eventHandler,
-                   TaskCommunicatorManagerInterface taskCommunicatorManagerInterface,
+                   TaskCommManagerInterface taskCommManagerInterface,
                    Credentials dagCredentials,
                    Clock clock,
                    String appUserName,
@@ -530,7 +529,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
         this.clock = clock;
         this.appContext = appContext;
 
-        this.taskCommunicatorManagerInterface = taskCommunicatorManagerInterface;
+        this.taskCommManagerInterface = taskCommManagerInterface;
         this.taskHeartbeatHandler = thh;
         this.eventHandler = eventHandler;
 
@@ -567,7 +566,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
         this.taskSpecificLaunchCmdOption = new TaskSpecificLaunchCmdOption(dagConf);
 
         // This "this leak" is okay because the retained pointer is in an instance variable.
-        stateMachine = new StateMachineTez<>(stateMachineFactory.make(this), this);
+        stateMachineTez = new StateMachineTez<>(stateMachineFactory.make(this), this);
 
         augmentStateMachine();
 
@@ -575,7 +574,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
     }
 
     private void augmentStateMachine() {
-        stateMachine
+        stateMachineTez
                 .registerStateEnteredCallback(DAGState.RUNNING, STATE_CHANGED_CALLBACK)
                 .registerStateEnteredCallback(DAGState.SUCCEEDED, STATE_CHANGED_CALLBACK)
                 .registerStateEnteredCallback(DAGState.FAILED, STATE_CHANGED_CALLBACK)
@@ -610,7 +609,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
     }
 
     protected StateMachine<DAGState, DAGEventType, DAGEvent> getStateMachine() {
-        return stateMachine;
+        return stateMachineTez;
     }
 
     @Override
@@ -643,7 +642,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
     public Vertex getVertex(TezVertexID vertexID) {
         readLock.lock();
         try {
-            return vertices.get(vertexID);
+            return vertexId_vertex.get(vertexID);
         } finally {
             readLock.unlock();
         }
@@ -674,7 +673,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
         this.readLock.lock();
         try {
             Map<String, TezVertexID> idNameMap = new HashMap<String, TezVertexID>();
-            for (Vertex v : getVertices().values()) {
+            for (Vertex v : getVertexId_vertex().values()) {
                 idNameMap.put(v.getName(), v.getVertexId());
             }
             return idNameMap;
@@ -720,7 +719,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
             updateCpuCounters();
             TezCounters counters = new TezCounters();
             counters.incrAllCounters(dagCounters);
-            return aggrTaskCounters(counters, vertices.values());
+            return aggrTaskCounters(counters, vertexId_vertex.values());
 
         } finally {
             readLock.unlock();
@@ -752,7 +751,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
             updateCpuCounters();
             TezCounters counters = new TezCounters();
             counters.incrAllCounters(dagCounters);
-            return aggrTaskCounters(counters, vertices.values());
+            return aggrTaskCounters(counters, vertexId_vertex.values());
 
         } finally {
             readLock.unlock();
@@ -824,8 +823,8 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
         try {
             float accProg = 0.0f;
             float dagProgress = 0.0f;
-            int verticesCount = getVertices().size();
-            for (Vertex v : getVertices().values()) {
+            int verticesCount = getVertexId_vertex().size();
+            for (Vertex v : getVertexId_vertex().values()) {
                 float vertexProgress = v.getProgress();
                 if (LOG.isDebugEnabled()) {
                     if (!ProgressHelper.isProgressWithinRange(vertexProgress)) {
@@ -857,7 +856,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
         try {
             int totalTasks = 0;
             int completedTasks = 0;
-            for (Vertex v : getVertices().values()) {
+            for (Vertex v : getVertexId_vertex().values()) {
                 int vTotalTasks = v.getTotalTasks();
                 int vCompletedTasks = v.getSucceededTasks();
                 if (vTotalTasks > 0) {
@@ -881,9 +880,9 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
     }
 
     @Override
-    public Map<TezVertexID, Vertex> getVertices() {
+    public Map<TezVertexID, Vertex> getVertexId_vertex() {
         synchronized (tasksSyncHandle) {
-            return Collections.unmodifiableMap(vertices);
+            return Collections.unmodifiableMap(vertexId_vertex);
         }
     }
 
@@ -911,7 +910,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
         int totalRejectedTaskAttemptCount = 0;
         readLock.lock();
         try {
-            for (Map.Entry<String, Vertex> entry : vertexMap.entrySet()) {
+            for (Map.Entry<String, Vertex> entry : vertexName_vertex.entrySet()) {
                 ProgressBuilder progress = entry.getValue().getVertexProgress();
                 status.addVertexProgress(entry.getKey(), progress);
                 totalTaskCount += progress.getTotalTaskCount();
@@ -940,7 +939,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
             }
             if (statusOptions.contains(StatusGetOpts.GET_MEMORY_USAGE)) {
                 status.setMemoryUsage(memoryMXBean.getHeapMemoryUsage().getUsed(),
-                        taskCommunicatorManagerInterface.getTotalUsedMemory());
+                        taskCommManagerInterface.getTotalUsedMemory());
             }
             return status;
         } finally {
@@ -997,7 +996,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
         int totalRejectedTaskAttemptCount = 0;
         readLock.lock();
         try {
-            for (Map.Entry<String, Vertex> entry : vertexMap.entrySet()) {
+            for (Map.Entry<String, Vertex> entry : vertexName_vertex.entrySet()) {
                 ProgressBuilder progress = entry.getValue().getVertexProgress();
                 totalTaskCount += progress.getTotalTaskCount();
                 totalSucceededTaskCount += progress.getSucceededTaskCount();
@@ -1026,7 +1025,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
     @Override
     public VertexStatusBuilder getVertexStatus(String vertexName,
                                                Set<StatusGetOpts> statusOptions) {
-        Vertex vertex = vertexMap.get(vertexName);
+        Vertex vertex = vertexName_vertex.get(vertexName);
         if (vertex == null) {
             return null;
         }
@@ -1043,7 +1042,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
     }
 
     protected void initializeVerticesAndStart() {
-        for (Vertex v : vertices.values()) {
+        for (Vertex v : vertexId_vertex.values()) {
             if (v.getInputVerticesCount() == 0) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Initing root vertex " + v.getLogIdentifier());
@@ -1053,7 +1052,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
             }
         }
 
-        for (Vertex v : vertices.values()) {
+        for (Vertex v : vertexId_vertex.values()) {
             if (v.getInputVerticesCount() == 0) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Starting root vertex " + v.getLogIdentifier());
@@ -1109,7 +1108,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
             }
         }
 
-        for (final Vertex vertex : vertices.values()) {
+        for (final Vertex vertex : vertexId_vertex.values()) {
             if (vertex.getOutputCommitters() == null) {
                 LOG.info("No output committers for vertex: " + vertex.getLogIdentifier());
                 continue;
@@ -1190,7 +1189,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
         // dag succeeded and all or none semantics were on and a commit failed.
         // Some output may be aborted multiple times if it is shared output.
         // It should be OK for it to be aborted multiple times.
-        for (Vertex vertex : vertices.values()) {
+        for (Vertex vertex : vertexId_vertex.values()) {
             ((VertexImpl) vertex).abortVertex(VertexStatus.State.FAILED);
         }
     }
@@ -1199,39 +1198,44 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
     /**
      * The only entry point to change the DAG.
      */
-    public void handle(DAGEvent event) {
+    public void handle(DAGEvent dagEvent) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Processing DAGEvent " + event.getDAGID() + " of type "
-                    + event.getType() + " while in state " + getInternalState()
-                    + ". Event: " + event);
+            LOG.debug("Processing DAGEvent " + dagEvent.getDAGID() + " of type "
+                    + dagEvent.getType() + " while in state " + getInternalState()
+                    + ". Event: " + dagEvent);
         }
+
         try {
             writeLock.lock();
+
             DAGState oldState = getInternalState();
+
             try {
-                getStateMachine().doTransition(event.getType(), event);
+                stateMachineTez.doTransition(dagEvent.getType(), dagEvent);
             } catch (InvalidStateTransitonException e) {
-                String message = "Invalid event " + event.getType() + " on Dag " + this.dagId
+                String message = "Invalid event " + dagEvent.getType() + " on Dag " + this.dagId
                         + " at currentState=" + oldState;
                 LOG.error("Can't handle " + message, e);
                 addDiagnostic(message);
-                eventHandler.handle(new DAGEvent(this.dagId,
-                        DAGEventType.INTERNAL_ERROR));
+                eventHandler.handle(new DAGEvent(this.dagId, DAGEventType.INTERNAL_ERROR));
             } catch (RuntimeException e) {
-                String message = "Uncaught Exception when handling event " + event.getType()
+                String message = "Uncaught Exception when handling event " + dagEvent.getType()
                         + " on Dag " + this.dagId + " at currentState=" + oldState;
+
                 LOG.error(message, e);
+
                 addDiagnostic(message);
+
                 if (!internalErrorTriggered.getAndSet(true)) {
                     // to prevent a recursive loop
-                    eventHandler.handle(new DAGEvent(this.dagId,
-                            DAGEventType.INTERNAL_ERROR));
+                    eventHandler.handle(new DAGEvent(this.dagId, DAGEventType.INTERNAL_ERROR));
                 }
             }
+
             //notify the eventhandler of state change
             if (oldState != getInternalState()) {
                 LOG.info(dagId + " transitioned from " + oldState + " to "
-                        + getInternalState() + " due to event " + event.getType());
+                        + getInternalState() + " due to event " + dagEvent.getType());
             }
         } finally {
             writeLock.unlock();
@@ -1242,7 +1246,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
     public DAGState getInternalState() {
         readLock.lock();
         try {
-            return getStateMachine().getCurrentState();
+            return stateMachineTez.getCurrentState();
         } finally {
             readLock.unlock();
         }
@@ -1584,13 +1588,12 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
         // create the vertices`
         for (int i = 0; i < numVertices; ++i) {
             String vertexName = getJobPlan().getVertex(i).getName();
-            VertexImpl v = createVertex(this, vertexName, i);
-            addVertex(v);
+            addVertex(createVertex(this, vertexName, i));
         }
 
         // check task resources, only check it in non-local mode
         if (!appContext.isLocal()) {
-            for (Vertex v : vertexMap.values()) {
+            for (Vertex v : vertexName_vertex.values()) {
                 // TODO TEZ-2003 (post) TEZ-2624 Ideally, this should be per source.
                 if (v.getTaskResource().compareTo(appContext.getClusterInfo().getMaxContainerCapability()) > 0) {
                     String msg = "Vertex's TaskResource is beyond the cluster container capability," +
@@ -1614,24 +1617,24 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
             finished(DAGState.FAILED);
             return DAGState.FAILED;
         }
+
         Map<String, EdgePlan> edgePlans = DagTypeConverters.createEdgePlanMapFromDAGPlan(getJobPlan().getEdgeList());
 
         // setup the dag
-        for (Vertex v : vertices.values()) {
+        for (Vertex v : vertexId_vertex.values()) {
             parseVertexEdges(this, edgePlans, v);
         }
 
         computeVertexDescendants();
 
         // Initialize the edges, now that the payload and vertices have been set.
-        for (Edge e : edges.values()) {
+        for (Edge edge : edgeId_edge.values()) {
             try {
-                e.initialize();
+                edge.initialize();
             } catch (AMUserCodeException ex) {
                 String msg = "Exception in " + ex.getSource();
                 LOG.error(msg, ex);
-                addDiagnostic(msg + ", " + ex.getMessage() + ", "
-                        + ExceptionUtils.getStackTrace(ex.getCause()));
+                addDiagnostic(msg + ", " + ex.getMessage() + ", " + ExceptionUtils.getStackTrace(ex.getCause()));
                 finished(DAGState.FAILED);
                 return DAGState.FAILED;
             }
@@ -1640,8 +1643,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
         try {
             assignDAGScheduler(this);
         } catch (TezException e1) {
-            String msg = "Fail to assign DAGScheduler for dag:" + dagName + " due to "
-                    + ExceptionUtils.getStackTrace(e1);
+            String msg = "Fail to assign DAGScheduler for dag:" + dagName + " due to " + ExceptionUtils.getStackTrace(e1);
             LOG.error(msg);
             addDiagnostic(msg);
             trySetTerminationCause(DAGTerminationCause.INIT_FAILURE);
@@ -1664,20 +1666,19 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
 
         // This is going to override the previously generated file
         // which didn't have the priorities
-        if (getConf().getBoolean(TezConfiguration.TEZ_GENERATE_DEBUG_ARTIFACTS,
-                TezConfiguration.TEZ_GENERATE_DEBUG_ARTIFACTS_DEFAULT)) {
+        if (getConf().getBoolean(TezConfiguration.TEZ_GENERATE_DEBUG_ARTIFACTS, TezConfiguration.TEZ_GENERATE_DEBUG_ARTIFACTS_DEFAULT)) {
             Utils.generateDAGVizFile(this, jobPlan, logDirs, dagScheduler);
         }
+
         return DAGState.INITED;
     }
 
     private void createDAGEdges(DAGImpl dag) throws TezException {
         for (EdgePlan edgePlan : dag.getJobPlan().getEdgeList()) {
-            EdgeProperty edgeProperty = DagTypeConverters
-                    .createEdgePropertyMapFromDAGPlan(edgePlan);
+            EdgeProperty edgeProperty = DagTypeConverters.createEdgePropertyMapFromDAGPlan(edgePlan);
 
             // edge manager may be also set via API when using custom edge type
-            dag.edges.put(edgePlan.getId(),
+            dag.edgeId_edge.put(edgePlan.getId(),
                     new Edge(edgeProperty, dag.getEventHandler(), dagConf));
         }
     }
@@ -1688,7 +1689,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
             vertexDescendants.add(new BitSet(numVertices));
         }
         BitSet verticesVisited = new BitSet(numVertices);
-        for (Vertex v : vertices.values()) {
+        for (Vertex v : vertexId_vertex.values()) {
             computeVertexDescendants(verticesVisited, v);
         }
     }
@@ -1713,7 +1714,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
         LOG.info("Using DAG Scheduler: " + dagSchedulerClassName);
         dag.dagScheduler = ReflectionUtils.createClazzInstance(dagSchedulerClassName, new Class<?>[]{
                 DAG.class, EventHandler.class}, new Object[]{dag, dag.eventHandler});
-        for (Vertex v : dag.vertices.values()) {
+        for (Vertex v : dag.vertexId_vertex.values()) {
             dag.dagScheduler.addVertexConcurrencyLimit(v.getVertexId(), v.getMaxTaskConcurrency());
         }
     }
@@ -1727,7 +1728,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
 
         return new VertexImpl(
                 vertexId, vertexPlan, vertexName, dag.dagConf,
-                dag.eventHandler, dag.taskCommunicatorManagerInterface,
+                dag.eventHandler, dag.taskCommManagerInterface,
                 dag.clock, dag.taskHeartbeatHandler,
                 !dag.commitAllOutputsOnSuccess, dag.appContext, vertexLocationHint,
                 dag.vertexGroups, dag.taskSpecificLaunchCmdOption, dag.entityUpdateTracker,
@@ -1746,8 +1747,8 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
 
         for (String inEdgeId : vertexPlan.getInEdgeIdList()) {
             EdgePlan edgePlan = edgePlans.get(inEdgeId);
-            Vertex inVertex = dag.vertexMap.get(edgePlan.getInputVertexName());
-            Edge edge = dag.edges.get(inEdgeId);
+            Vertex inVertex = dag.vertexName_vertex.get(edgePlan.getInputVertexName());
+            Edge edge = dag.edgeId_edge.get(inEdgeId);
             edge.setSourceVertex(inVertex);
             edge.setDestinationVertex(vertex);
             inVertices.put(inVertex, edge);
@@ -1755,8 +1756,8 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
 
         for (String outEdgeId : vertexPlan.getOutEdgeIdList()) {
             EdgePlan edgePlan = edgePlans.get(outEdgeId);
-            Vertex outVertex = dag.vertexMap.get(edgePlan.getOutputVertexName());
-            Edge edge = dag.edges.get(outEdgeId);
+            Vertex outVertex = dag.vertexName_vertex.get(edgePlan.getOutputVertexName());
+            Edge edge = dag.edgeId_edge.get(outEdgeId);
             edge.setSourceVertex(vertex);
             edge.setDestinationVertex(outVertex);
             outVertices.put(outVertex, edge);
@@ -1820,7 +1821,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
                 }
                 // Initialize dag synchronously to generate the vertices and recover its vertices to the desired state.
                 dag.initializeDAG();
-                for (Vertex v : dag.vertexMap.values()) {
+                for (Vertex v : dag.vertexName_vertex.values()) {
                     dag.eventHandler.handle(new VertexEventRecoverVertex(v.getVertexId(), vertexDesiredState));
                 }
                 dag.addDiagnostic("DAG is recovered to finished state:" + recoverEvent.getDesiredState()
@@ -1857,18 +1858,20 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
             } else {
                 dag.initTime = dag.clock.getTime();
             }
+
             dag.startDAGCpuTime = dag.appContext.getCumulativeCPUTime();
             dag.startDAGGCTime = dag.appContext.getCumulativeGCTime();
 
-            DAGState state = dag.initializeDAG();
-            if (state != DAGState.INITED) {
+            DAGState dagState = dag.initializeDAG();
+            if (dagState != DAGState.INITED) {
                 dag.trySetTerminationCause(DAGTerminationCause.INIT_FAILURE);
-                return state;
+                return dagState;
             }
 
             // TODO Metrics
             //dag.metrics.endPreparingJob(dag);
             dag.logJobHistoryInitedEvent();
+
             return DAGState.INITED;
 
 
@@ -1907,16 +1910,16 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
     }
 
     // use LinkedHashMap to ensure the vertex order (TEZ-1065)
-    LinkedHashMap<String, Vertex> vertexMap = new LinkedHashMap<>();
+    LinkedHashMap<String, Vertex> vertexName_vertex = new LinkedHashMap<>();
 
     void addVertex(Vertex v) {
-        vertices.put(v.getVertexId(), v);
-        vertexMap.put(v.getName(), v);
+        vertexId_vertex.put(v.getVertexId(), v);
+        vertexName_vertex.put(v.getName(), v);
     }
 
     @Override
     public Vertex getVertex(String vertexName) {
-        return vertexMap.get(vertexName);
+        return vertexName_vertex.get(vertexName);
     }
 
     private void mayBeConstructFinalFullCounters() {
@@ -1934,7 +1937,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
     public TezCounters constructFinalFullcounters() {
         final AggregateTezCounters aggregateTezCounters = new AggregateTezCounters();
         aggregateTezCounters.aggrAllCounters(dagCounters);
-        for (Vertex v : this.vertices.values()) {
+        for (Vertex v : this.vertexId_vertex.values()) {
             aggregateTezCounters.aggrAllCounters(v.getAllCounters());
         }
         return aggregateTezCounters;
@@ -1948,7 +1951,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
                    VertexTerminationCause vertexTerminationCause) {
 
         if (trySetTerminationCause(dagTerminationCause)) {
-            for (Vertex v : vertices.values()) {
+            for (Vertex v : vertexId_vertex.values()) {
                 eventHandler.handle(
                         new VertexEventTermination(v.getVertexId(), vertexTerminationCause)
                 );
@@ -2054,7 +2057,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
                         + ", vertexId=" + vertexEvent.getVertexId()
                         + ", vertexState=" + vertexEvent.getVertexState());
             }
-            Vertex vertex = job.vertices.get(vertexEvent.getVertexId());
+            Vertex vertex = job.vertexId_vertex.get(vertexEvent.getVertexId());
             job.numCompletedVertices++;
             if (vertexEvent.getVertexState() == VertexState.SUCCEEDED) {
                 forceTransitionToKillWait = !(job.vertexSucceeded(vertex));
@@ -2105,7 +2108,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
         @Override
         public DAGState transition(DAGImpl job, DAGEvent event) {
             DAGEventVertexReRunning vertexEvent = (DAGEventVertexReRunning) event;
-            Vertex vertex = job.vertices.get(vertexEvent.getVertexId());
+            Vertex vertex = job.vertexId_vertex.get(vertexEvent.getVertexId());
             boolean failed = job.vertexReRunning(vertex);
             if (!failed) {
                 job.numCompletedVertices--;

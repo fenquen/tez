@@ -74,7 +74,7 @@ import org.apache.tez.dag.api.oldrecords.TaskAttemptState;
 import org.apache.tez.dag.api.oldrecords.TaskState;
 import org.apache.tez.dag.app.AppContext;
 import org.apache.tez.dag.app.ContainerContext;
-import org.apache.tez.dag.app.TaskCommunicatorManagerInterface;
+import org.apache.tez.dag.app.TaskCommManagerInterface;
 import org.apache.tez.dag.app.TaskHeartbeatHandler;
 import org.apache.tez.dag.app.dag.StateChangeNotifier;
 import org.apache.tez.dag.app.dag.TaskStateInternal;
@@ -111,7 +111,7 @@ public class TestTaskImpl {
   private final int partition = 1;
 
   private Configuration conf;
-  private TaskCommunicatorManagerInterface taskCommunicatorManagerInterface;
+  private TaskCommManagerInterface taskCommManagerInterface;
   private TaskHeartbeatHandler taskHeartbeatHandler;
   private Credentials credentials;
   private Clock clock;
@@ -151,7 +151,7 @@ public class TestTaskImpl {
   public void setup() {
     conf = new Configuration();
     conf.setInt(TezConfiguration.TEZ_AM_TASK_MAX_FAILED_ATTEMPTS, 4);
-    taskCommunicatorManagerInterface = mock(TaskCommunicatorManagerInterface.class);
+    taskCommManagerInterface = mock(TaskCommManagerInterface.class);
     taskHeartbeatHandler = mock(TaskHeartbeatHandler.class);
     credentials = new Credentials();
     clock = new SystemClock();
@@ -187,7 +187,7 @@ public class TestTaskImpl {
     eventHandler = new TestEventHandler();
 
     mockTask = new MockTaskImpl(vertexId, partition,
-        eventHandler, conf, taskCommunicatorManagerInterface, clock,
+        eventHandler, conf, taskCommManagerInterface, clock,
         taskHeartbeatHandler, appContext, leafVertex,
         taskResource, containerContext, vertex);
     mockTaskSpec = mock(TaskSpec.class);
@@ -425,7 +425,7 @@ public class TestTaskImpl {
     Vertex vertex = mock(Vertex.class);
     doReturn(new VertexImpl.VertexConfigImpl(conf)).when(vertex).getVertexConfig();
     mockTask = new MockTaskImpl(vertexId, partition,
-        eventHandler, conf, taskCommunicatorManagerInterface, clock,
+        eventHandler, conf, taskCommManagerInterface, clock,
         taskHeartbeatHandler, appContext, leafVertex,
         taskResource, containerContext, vertex);
 
@@ -856,7 +856,7 @@ public class TestTaskImpl {
     Vertex vertex = mock(Vertex.class);
     doReturn(new VertexImpl.VertexConfigImpl(conf)).when(vertex).getVertexConfig();
     mockTask = new MockTaskImpl(vertexId, partition,
-        eventHandler, conf, taskCommunicatorManagerInterface, clock,
+        eventHandler, conf, taskCommManagerInterface, clock,
         taskHeartbeatHandler, appContext, leafVertex,
         taskResource, containerContext, vertex);
     TezTaskID taskId = getNewTaskID();
@@ -891,7 +891,7 @@ public class TestTaskImpl {
     Vertex vertex = mock(Vertex.class);
     doReturn(new VertexImpl.VertexConfigImpl(conf)).when(vertex).getVertexConfig();
     mockTask = new MockTaskImpl(vertexId, partition,
-        eventHandler, conf, taskCommunicatorManagerInterface, clock,
+        eventHandler, conf, taskCommManagerInterface, clock,
         taskHeartbeatHandler, appContext, leafVertex,
         taskResource, containerContext, vertex);
     TezTaskID taskId = getNewTaskID();
@@ -926,7 +926,7 @@ public class TestTaskImpl {
     Vertex vertex = mock(Vertex.class);
     doReturn(new VertexImpl.VertexConfigImpl(conf)).when(vertex).getVertexConfig();
     mockTask = new MockTaskImpl(vertexId, partition,
-        eventHandler, conf, taskCommunicatorManagerInterface, clock,
+        eventHandler, conf, taskCommManagerInterface, clock,
         taskHeartbeatHandler, appContext, leafVertex,
         taskResource, containerContext, vertex);
     TezTaskID taskId = getNewTaskID();
@@ -1142,7 +1142,7 @@ public class TestTaskImpl {
     Vertex vertex = mock(Vertex.class);
     doReturn(new VertexImpl.VertexConfigImpl(newConf)).when(vertex).getVertexConfig();
     mockTask = new MockTaskImpl(vertexId, partition,
-      eventHandler, conf, taskCommunicatorManagerInterface, clock,
+      eventHandler, conf, taskCommManagerInterface, clock,
       taskHeartbeatHandler, appContext, leafVertex,
       taskResource, containerContext, vertex);
     TezTaskID taskId = getNewTaskID();
@@ -1198,7 +1198,7 @@ public class TestTaskImpl {
     Vertex vertex = mock(Vertex.class);
     doReturn(new VertexImpl.VertexConfigImpl(newConf)).when(vertex).getVertexConfig();
     mockTask = new MockTaskImpl(vertexId, partition,
-        eventHandler, conf, taskCommunicatorManagerInterface, clock,
+        eventHandler, conf, taskCommManagerInterface, clock,
         taskHeartbeatHandler, appContext, true,
         taskResource, containerContext, vertex);
     TezTaskID taskId = getNewTaskID();
@@ -1268,7 +1268,7 @@ public class TestTaskImpl {
     Vertex vertex = mock(Vertex.class);
     doReturn(new VertexImpl.VertexConfigImpl(newConf)).when(vertex).getVertexConfig();
     mockTask = new MockTaskImpl(vertexId, partition,
-        eventHandler, conf, taskCommunicatorManagerInterface, clock,
+        eventHandler, conf, taskCommManagerInterface, clock,
         taskHeartbeatHandler, appContext, leafVertex,
         taskResource, containerContext, vertex);
     TezTaskID taskId = getNewTaskID();
@@ -1404,12 +1404,12 @@ public class TestTaskImpl {
     private Vertex vertex;
 
     public MockTaskImpl(TezVertexID vertexId, int partition,
-        EventHandler eventHandler, Configuration conf,
-        TaskCommunicatorManagerInterface taskCommunicatorManagerInterface, Clock clock,
-        TaskHeartbeatHandler thh, AppContext appContext, boolean leafVertex,
-        Resource resource,
-        ContainerContext containerContext, Vertex vertex) {
-      super(vertexId, partition, eventHandler, conf, taskCommunicatorManagerInterface,
+                        EventHandler eventHandler, Configuration conf,
+                        TaskCommManagerInterface taskCommManagerInterface, Clock clock,
+                        TaskHeartbeatHandler thh, AppContext appContext, boolean leafVertex,
+                        Resource resource,
+                        ContainerContext containerContext, Vertex vertex) {
+      super(vertexId, partition, eventHandler, conf, taskCommManagerInterface,
           clock, thh, appContext, leafVertex, resource,
           containerContext, mock(StateChangeNotifier.class), vertex);
       this.vertex = vertex;
@@ -1419,7 +1419,7 @@ public class TestTaskImpl {
     protected TaskAttemptImpl createAttempt(int attemptNumber, TezTaskAttemptID schedCausalTA) {
       MockTaskAttemptImpl attempt = new MockTaskAttemptImpl(
           TezBuilderUtils.newTaskAttemptId(getTaskID(), attemptNumber),
-          eventHandler, taskCommunicatorManagerInterface,
+          eventHandler, taskCommManagerInterface,
           conf, clock, taskHeartbeatHandler, appContext,
           true, taskResource, containerContext, schedCausalTA);
       taskAttempts.add(attempt);
@@ -1466,10 +1466,10 @@ public class TestTaskImpl {
     private TaskAttemptState state = TaskAttemptState.NEW;
 
     public MockTaskAttemptImpl(TezTaskAttemptID attemptId,
-        EventHandler eventHandler, TaskCommunicatorManagerInterface tal, Configuration conf,
-        Clock clock, TaskHeartbeatHandler thh, AppContext appContext,
-        boolean isRescheduled,
-        Resource resource, ContainerContext containerContext, TezTaskAttemptID schedCausalTA) {
+                               EventHandler eventHandler, TaskCommManagerInterface tal, Configuration conf,
+                               Clock clock, TaskHeartbeatHandler thh, AppContext appContext,
+                               boolean isRescheduled,
+                               Resource resource, ContainerContext containerContext, TezTaskAttemptID schedCausalTA) {
       super(attemptId, eventHandler, tal, conf, clock, thh,
           appContext, isRescheduled, resource, containerContext, false, mockTask,
           locationHint, mockTaskSpec, schedCausalTA);

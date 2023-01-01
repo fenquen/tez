@@ -71,7 +71,7 @@ public interface DAG extends DagInfo {
      */
     Vertex getVertex(String vertexName);
 
-    Map<TezVertexID, Vertex> getVertices();
+    Map<TezVertexID, Vertex> getVertexId_vertex();
 
     Vertex getVertex(TezVertexID vertexId);
 

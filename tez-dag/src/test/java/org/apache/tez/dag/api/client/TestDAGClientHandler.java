@@ -61,8 +61,8 @@ public class TestDAGClientHandler {
     DAGAppMaster mockDagAM = mock(DAGAppMaster.class);
     when(mockDagAM.getState()).thenReturn(DAGAppMasterState.RUNNING);
     AppContext mockAppContext = mock(AppContext.class);
-    when(mockDagAM.getContext()).thenReturn(mockAppContext);
-    when(mockDagAM.getContext().getCurrentDAG()).thenReturn(mockDAG);
+    when(mockDagAM.getAppContext()).thenReturn(mockAppContext);
+    when(mockDagAM.getAppContext().getCurrentDAG()).thenReturn(mockDAG);
     when(mockAppContext.getClock()).thenReturn(new SystemClock());
 
     DAGClientHandler dagClientHandler = new DAGClientHandler(mockDagAM);

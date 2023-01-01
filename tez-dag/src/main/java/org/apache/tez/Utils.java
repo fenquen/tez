@@ -122,8 +122,8 @@ public class Utils {
 
     HashMap<String, Vertex> nameToVertex = null;
     if (scheduler != null) {
-      nameToVertex = new HashMap<>(dag.getVertices().size());
-      for (Vertex v: dag.getVertices().values()) {
+      nameToVertex = new HashMap<>(dag.getVertexId_vertex().size());
+      for (Vertex v: dag.getVertexId_vertex().values()) {
         nameToVertex.put(v.getName(), v);
       }
     }

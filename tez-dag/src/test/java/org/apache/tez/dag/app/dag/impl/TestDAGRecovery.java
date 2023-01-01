@@ -64,7 +64,7 @@ import org.apache.tez.dag.app.RecoveryParser.DAGRecoveryData;
 import org.apache.tez.dag.app.RecoveryParser.TaskAttemptRecoveryData;
 import org.apache.tez.dag.app.RecoveryParser.TaskRecoveryData;
 import org.apache.tez.dag.app.RecoveryParser.VertexRecoveryData;
-import org.apache.tez.dag.app.TaskCommunicatorManagerInterface;
+import org.apache.tez.dag.app.TaskCommManagerInterface;
 import org.apache.tez.dag.app.TaskHeartbeatHandler;
 import org.apache.tez.dag.app.dag.DAGState;
 import org.apache.tez.dag.app.dag.Task;
@@ -155,7 +155,7 @@ public class TestDAGRecovery {
   private TaskEventDispatcher taskEventDispatcher;
   private VertexEventDispatcher vertexEventDispatcher;
   private DagEventDispatcher dagEventDispatcher;
-  private TaskCommunicatorManagerInterface taskCommunicatorManagerInterface;
+  private TaskCommManagerInterface taskCommManagerInterface;
   private TaskHeartbeatHandler thh;
   private Clock clock = new SystemClock();
   private DAGFinishEventHandler dagFinishEventHandler;
@@ -261,8 +261,8 @@ public class TestDAGRecovery {
     }
 
     @Override
-    public void handleCriticalEvent(DAGHistoryEvent event) throws IOException {
-      this.historyEvents.add(event.getHistoryEvent());
+    public void handleCriticalEvent(DAGHistoryEvent dagHistoryEvent) throws IOException {
+      this.historyEvents.add(dagHistoryEvent.getHistoryEvent());
     }
 
     public List<HistoryEvent> getHistoryEvents() {
@@ -346,7 +346,7 @@ public class TestDAGRecovery {
     doReturn(aclManager).when(appContext).getAMACLManager();
     doReturn(dagRecoveryData).when(appContext).getDAGRecoveryData();
     dag = new DAGImpl(dagId, conf, dagPlan, dispatcher.getEventHandler(),
-        taskCommunicatorManagerInterface, fsTokens, clock, "user", thh,
+            taskCommManagerInterface, fsTokens, clock, "user", thh,
         appContext);
     dag.entityUpdateTracker = new StateChangeNotifierForTest(dag);
     doReturn(dag).when(appContext).getCurrentDAG();
@@ -554,7 +554,7 @@ public class TestDAGRecovery {
     dispatcher.await();
 
     assertEquals(DAGState.SUCCEEDED, dag.getState());
-    assertEquals(3, dag.getVertices().size());
+    assertEquals(3, dag.getVertexId_vertex().size());
     assertEquals(VertexState.SUCCEEDED, dag.getVertex("vertex1").getState());
     assertEquals(VertexState.SUCCEEDED, dag.getVertex("vertex2").getState());
     assertEquals(VertexState.SUCCEEDED, dag.getVertex("vertex3").getState());
@@ -572,7 +572,7 @@ public class TestDAGRecovery {
     dispatcher.await();
 
     assertEquals(DAGState.FAILED, dag.getState());
-    assertEquals(3, dag.getVertices().size());
+    assertEquals(3, dag.getVertexId_vertex().size());
     assertEquals(VertexState.FAILED, dag.getVertex("vertex1").getState());
     assertEquals(VertexState.FAILED, dag.getVertex("vertex2").getState());
     assertEquals(VertexState.FAILED, dag.getVertex("vertex3").getState());
@@ -590,7 +590,7 @@ public class TestDAGRecovery {
     dispatcher.await();
 
     assertEquals(DAGState.KILLED, dag.getState());
-    assertEquals(3, dag.getVertices().size());
+    assertEquals(3, dag.getVertexId_vertex().size());
     assertEquals(VertexState.KILLED, dag.getVertex("vertex1").getState());
     assertEquals(VertexState.KILLED, dag.getVertex("vertex2").getState());
     assertEquals(VertexState.KILLED, dag.getVertex("vertex3").getState());
@@ -608,7 +608,7 @@ public class TestDAGRecovery {
     dispatcher.await();
 
     assertEquals(DAGState.ERROR, dag.getState());
-    assertEquals(3, dag.getVertices().size());
+    assertEquals(3, dag.getVertexId_vertex().size());
     assertEquals(VertexState.ERROR, dag.getVertex("vertex1").getState());
     assertEquals(VertexState.ERROR, dag.getVertex("vertex2").getState());
     assertEquals(VertexState.ERROR, dag.getVertex("vertex3").getState());

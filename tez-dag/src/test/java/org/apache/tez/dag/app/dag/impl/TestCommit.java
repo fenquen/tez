@@ -71,7 +71,7 @@ import org.apache.tez.dag.api.oldrecords.TaskState;
 import org.apache.tez.dag.api.records.DAGProtos.DAGPlan;
 import org.apache.tez.dag.app.AppContext;
 import org.apache.tez.dag.app.ClusterInfo;
-import org.apache.tez.dag.app.TaskCommunicatorManagerInterface;
+import org.apache.tez.dag.app.TaskCommManagerInterface;
 import org.apache.tez.dag.app.TaskHeartbeatHandler;
 import org.apache.tez.dag.app.dag.DAGState;
 import org.apache.tez.dag.app.dag.DAGTerminationCause;
@@ -145,7 +145,7 @@ public class TestCommit {
   private TaskEventDispatcher taskEventDispatcher;
   private VertexEventDispatcher vertexEventDispatcher;
   private DagEventDispatcher dagEventDispatcher;
-  private TaskCommunicatorManagerInterface taskCommunicatorManagerInterface;
+  private TaskCommManagerInterface taskCommManagerInterface;
   private TaskHeartbeatHandler thh;
   private Clock clock = new SystemClock();
   private DAGFinishEventHandler dagFinishEventHandler;
@@ -320,7 +320,7 @@ public class TestCommit {
     doReturn(historyEventHandler).when(appContext).getHistoryHandler();
     doReturn(aclManager).when(appContext).getAMACLManager();
     dag = new DAGImpl(dagId, conf, dagPlan, dispatcher.getEventHandler(),
-        taskCommunicatorManagerInterface, fsTokens, clock, "user", thh, appContext);
+            taskCommManagerInterface, fsTokens, clock, "user", thh, appContext);
     doReturn(dag).when(appContext).getCurrentDAG();
     doReturn(dispatcher.getEventHandler()).when(appContext).getEventHandler();
     ClusterInfo clusterInfo = new ClusterInfo(Resource.newInstance(8192,10));
@@ -2028,16 +2028,16 @@ public class TestCommit {
     }
 
     @Override
-    public void handleCriticalEvent(DAGHistoryEvent event) throws IOException {
-      if (event.getHistoryEvent().getEventType() == HistoryEventType.VERTEX_GROUP_COMMIT_FINISHED
+    public void handleCriticalEvent(DAGHistoryEvent dagHistoryEvent) throws IOException {
+      if (dagHistoryEvent.getHistoryEvent().getEventType() == HistoryEventType.VERTEX_GROUP_COMMIT_FINISHED
           && failVertexGroupCommitFinishedEvent) {
         throw new IOException("fail VertexGroupCommitFinishedEvent");
       }
-      if (event.getHistoryEvent().getEventType() == HistoryEventType.DAG_COMMIT_STARTED
+      if (dagHistoryEvent.getHistoryEvent().getEventType() == HistoryEventType.DAG_COMMIT_STARTED
           && failDAGCommitStartedEvent) {
         throw new IOException("fail DAGCommitStartedEvent");
       }
-      historyEvents.add(event.getHistoryEvent());
+      historyEvents.add(dagHistoryEvent.getHistoryEvent());
     }
 
     public void verifyVertexGroupCommitStartedEvent(String groupName, int expectedTimes) {

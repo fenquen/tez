@@ -101,7 +101,7 @@ public class TestPreemption {
     DAGImpl dagImpl;
     do {
       Thread.sleep(100); // usually needs to sleep 2-3 times
-    } while ((dagImpl = (DAGImpl) mockApp.getContext().getCurrentDAG()) == null);
+    } while ((dagImpl = (DAGImpl) mockApp.getAppContext().getCurrentDAG()) == null);
 
     int vertexIndex = 0;
     int upToTaskVersion = 3;
@@ -185,7 +185,7 @@ public class TestPreemption {
     mockLauncher.startScheduling(false); // turn off scheduling to block DAG before submitting it
     DAGClient dagClient = tezClient.submitDAG(dag);
     
-    DAGImpl dagImpl = (DAGImpl) mockApp.getContext().getCurrentDAG();
+    DAGImpl dagImpl = (DAGImpl) mockApp.getAppContext().getCurrentDAG();
     TezVertexID vertexId = TezVertexID.getInstance(dagImpl.getID(), vertexIndex);
     TezTaskAttemptID taId = TezTaskAttemptID.getInstance(TezTaskID.getInstance(vertexId, 0), 0);
 

@@ -46,24 +46,24 @@ public class DrainDispatcher extends AsyncDispatcher {
   @SuppressWarnings("unchecked")
   @Override
   public void register(Class<? extends Enum> eventType,
-                       EventHandler handler) {
+                       EventHandler eventHandler) {
     /* check to see if we have a listener registered */
     EventHandler<Event> registeredHandler = (EventHandler<Event>) eventHandlers.get(eventType);
     checkForExistingDispatchers(false, eventType);
-    LOG.info("Registering " + eventType + " for " + handler.getClass());
+    LOG.info("Registering " + eventType + " for " + eventHandler.getClass());
     if (registeredHandler == null) {
-      eventHandlers.put(eventType, handler);
+      eventHandlers.put(eventType, eventHandler);
     } else if (!(registeredHandler instanceof MultiListenerHandler)){
       /* for multiple listeners of an event add the multiple listener handler */
       MultiListenerHandler multiHandler = new MultiListenerHandler();
       multiHandler.addHandler(registeredHandler);
-      multiHandler.addHandler(handler);
+      multiHandler.addHandler(eventHandler);
       eventHandlers.put(eventType, multiHandler);
     } else {
       /* already a multilistener, just add to it */
       MultiListenerHandler multiHandler
         = (MultiListenerHandler) registeredHandler;
-      multiHandler.addHandler(handler);
+      multiHandler.addHandler(eventHandler);
     }
   }
 

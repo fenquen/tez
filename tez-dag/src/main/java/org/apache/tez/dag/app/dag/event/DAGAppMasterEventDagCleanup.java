@@ -18,14 +18,14 @@ import org.apache.tez.dag.app.dag.DAG;
 
 public class DAGAppMasterEventDagCleanup extends DAGAppMasterEvent {
 
-  private final DAG dag;
+    private final DAG dag;
 
-  public DAGAppMasterEventDagCleanup(DAG dag) {
-    super(DAGAppMasterEventType.DAG_CLEANUP);
-    this.dag = dag;
-  }
+    public DAGAppMasterEventDagCleanup(DAG dag) {
+        super(DAGAppMasterEventType.DAG_CLEANUP);
+        this.dag = dag;
+    }
 
-  public DAG getDag() {
-    return this.dag;
-  }
+    public DAG getDag() {
+        return this.dag;
+    }
 }

@@ -104,7 +104,7 @@ public class TestTaskCommunicatorManager1 {
   AMContainerMap amContainerMap;
   EventHandler eventHandler;
   DAG dag;
-  TaskCommunicatorManager taskAttemptListener;
+  TaskCommManager taskAttemptListener;
   ContainerTask containerTask;
   AMContainerTask amContainerTask;
   TaskSpec taskSpec;
@@ -154,7 +154,7 @@ public class TestTaskCommunicatorManager1 {
     } catch (IOException e) {
       throw new TezUncheckedException(e);
     }
-    taskAttemptListener = new TaskCommunicatorManagerInterfaceImplForTest(appContext,
+    taskAttemptListener = new TaskCommManagerInterfaceImplForTest(appContext,
         mock(TaskHeartbeatHandler.class), mock(ContainerHeartbeatHandler.class),
         Lists.newArrayList(
             new NamedEntityDescriptor(TezConstants.getTezYarnServicePluginName(), null)
@@ -364,7 +364,7 @@ public class TestTaskCommunicatorManager1 {
     sessionToken.setService(identifier.getJobId());
     TokenCache.setSessionToken(sessionToken, credentials);
     UserPayload userPayload = TezUtils.createUserPayloadFromConf(conf);
-    taskAttemptListener = new TaskCommunicatorManager(appContext,
+    taskAttemptListener = new TaskCommManager(appContext,
         mock(TaskHeartbeatHandler.class), mock(ContainerHeartbeatHandler.class), Lists.newArrayList(
         new NamedEntityDescriptor(TezConstants.getTezYarnServicePluginName(), null)
             .setUserPayload(userPayload)));
@@ -388,7 +388,7 @@ public class TestTaskCommunicatorManager1 {
       conf.set(TezConfiguration.TEZ_AM_TASK_AM_PORT_RANGE, port + "-" + port);
       UserPayload userPayload = TezUtils.createUserPayloadFromConf(conf);
 
-      taskAttemptListener = new TaskCommunicatorManager(appContext,
+      taskAttemptListener = new TaskCommManager(appContext,
           mock(TaskHeartbeatHandler.class), mock(ContainerHeartbeatHandler.class), Lists
           .newArrayList(new NamedEntityDescriptor(TezConstants.getTezYarnServicePluginName(), null)
               .setUserPayload(userPayload)));
@@ -442,12 +442,12 @@ public class TestTaskCommunicatorManager1 {
     return ContainerId.newInstance(appAttemptId, containerIdx);
   }
 
-  private static class TaskCommunicatorManagerInterfaceImplForTest extends TaskCommunicatorManager {
+  private static class TaskCommManagerInterfaceImplForTest extends TaskCommManager {
 
-    public TaskCommunicatorManagerInterfaceImplForTest(AppContext context,
-                                                       TaskHeartbeatHandler thh,
-                                                       ContainerHeartbeatHandler chh,
-                                                       List<NamedEntityDescriptor> taskCommDescriptors) throws TezException {
+    public TaskCommManagerInterfaceImplForTest(AppContext context,
+                                               TaskHeartbeatHandler thh,
+                                               ContainerHeartbeatHandler chh,
+                                               List<NamedEntityDescriptor> taskCommDescriptors) throws TezException {
       super(context, thh, chh, taskCommDescriptors);
     }
 

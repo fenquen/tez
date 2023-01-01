@@ -68,7 +68,7 @@ import org.apache.tez.dag.app.ClusterInfo;
 import org.apache.tez.dag.app.ContainerContext;
 import org.apache.tez.dag.app.ContainerHeartbeatHandler;
 import org.apache.tez.dag.app.DAGAppMasterState;
-import org.apache.tez.dag.app.TaskCommunicatorManagerInterface;
+import org.apache.tez.dag.app.TaskCommManagerInterface;
 import org.apache.tez.dag.app.dag.TaskAttempt;
 import org.apache.tez.dag.app.rm.YarnTaskSchedulerService.CookieContainerRequest;
 import org.apache.tez.dag.app.rm.TestTaskSchedulerHelpers.AMRMClientAsyncForTest;
@@ -137,7 +137,7 @@ public class TestContainerReuse {
     doReturn(conf).when(appContext).getAMConf();
     AMContainerMap amContainerMap = new AMContainerMap(
       mock(ContainerHeartbeatHandler.class),
-      mock(TaskCommunicatorManagerInterface.class),
+      mock(TaskCommManagerInterface.class),
       new ContainerContextMatcher(), appContext);
     AMNodeTracker amNodeTracker = new AMNodeTracker(eventHandler, appContext);
     doReturn(amContainerMap).when(appContext).getAllContainers();
@@ -268,7 +268,7 @@ public class TestContainerReuse {
     doReturn(new Configuration(false)).when(appContext).getAMConf();
     AMContainerMap amContainerMap = new AMContainerMap(
       mock(ContainerHeartbeatHandler.class),
-      mock(TaskCommunicatorManagerInterface.class),
+      mock(TaskCommManagerInterface.class),
       new ContainerContextMatcher(), appContext);
     AMNodeTracker amNodeTracker = new AMNodeTracker(eventHandler, appContext);
     doReturn(amContainerMap).when(appContext).getAllContainers();
@@ -366,7 +366,7 @@ public class TestContainerReuse {
     AppContext appContext = mock(AppContext.class);
     doReturn(new Configuration(false)).when(appContext).getAMConf();
     AMContainerMap amContainerMap = new AMContainerMap(mock(ContainerHeartbeatHandler.class),
-        mock(TaskCommunicatorManagerInterface.class), new ContainerContextMatcher(), appContext);
+        mock(TaskCommManagerInterface.class), new ContainerContextMatcher(), appContext);
     AMNodeTracker amNodeTracker = new AMNodeTracker(eventHandler, appContext);
     doReturn(amContainerMap).when(appContext).getAllContainers();
     doReturn(amNodeTracker).when(appContext).getNodeTracker();
@@ -511,7 +511,7 @@ public class TestContainerReuse {
     AppContext appContext = mock(AppContext.class);
     doReturn(new Configuration(false)).when(appContext).getAMConf();
     AMContainerMap amContainerMap = new AMContainerMap(mock(ContainerHeartbeatHandler.class),
-        mock(TaskCommunicatorManagerInterface.class), new ContainerContextMatcher(), appContext);
+        mock(TaskCommManagerInterface.class), new ContainerContextMatcher(), appContext);
     AMNodeTracker amNodeTracker = new AMNodeTracker(eventHandler, appContext);
     doReturn(amContainerMap).when(appContext).getAllContainers();
     doReturn(amNodeTracker).when(appContext).getNodeTracker();
@@ -700,7 +700,7 @@ public class TestContainerReuse {
     doReturn(new Configuration(false)).when(appContext).getAMConf();
     AMContainerMap amContainerMap = new AMContainerMap(
         mock(ContainerHeartbeatHandler.class),
-        mock(TaskCommunicatorManagerInterface.class),
+        mock(TaskCommManagerInterface.class),
         new ContainerContextMatcher(), appContext);
     AMNodeTracker amNodeTracker = new AMNodeTracker(eventHandler, appContext);
     doReturn(amContainerMap).when(appContext).getAllContainers();
@@ -824,7 +824,7 @@ public class TestContainerReuse {
     doReturn(new Configuration(false)).when(appContext).getAMConf();
     AMContainerMap amContainerMap = new AMContainerMap(
       mock(ContainerHeartbeatHandler.class),
-      mock(TaskCommunicatorManagerInterface.class),
+      mock(TaskCommManagerInterface.class),
       new ContainerContextMatcher(), appContext);
     AMNodeTracker amNodeTracker = new AMNodeTracker(eventHandler, appContext);
     doReturn(amContainerMap).when(appContext).getAllContainers();
@@ -939,7 +939,7 @@ public class TestContainerReuse {
     doReturn(new Configuration(false)).when(appContext).getAMConf();
     ChangingDAGIDAnswer dagIDAnswer = new ChangingDAGIDAnswer(dagID1);
     AMContainerMap amContainerMap = new AMContainerMap(mock(ContainerHeartbeatHandler.class),
-        mock(TaskCommunicatorManagerInterface.class), new ContainerContextMatcher(), appContext);
+        mock(TaskCommManagerInterface.class), new ContainerContextMatcher(), appContext);
     AMNodeTracker amNodeTracker = new AMNodeTracker(eventHandler, appContext);
     doReturn(amContainerMap).when(appContext).getAllContainers();
     doReturn(amNodeTracker).when(appContext).getNodeTracker();
@@ -1096,7 +1096,7 @@ public class TestContainerReuse {
     doReturn(new Configuration(false)).when(appContext).getAMConf();
     ChangingDAGIDAnswer dagIDAnswer = new ChangingDAGIDAnswer(dagID1);
     AMContainerMap amContainerMap = new AMContainerMap(mock(ContainerHeartbeatHandler.class),
-        mock(TaskCommunicatorManagerInterface.class), new ContainerContextMatcher(), appContext);
+        mock(TaskCommManagerInterface.class), new ContainerContextMatcher(), appContext);
     AMNodeTracker amNodeTracker = new AMNodeTracker(eventHandler, appContext);
     doReturn(amContainerMap).when(appContext).getAllContainers();
     doReturn(amNodeTracker).when(appContext).getNodeTracker();
@@ -1332,7 +1332,7 @@ public class TestContainerReuse {
     AppContext appContext = mock(AppContext.class);
     doReturn(new Configuration(false)).when(appContext).getAMConf();
     AMContainerMap amContainerMap = new AMContainerMap(mock(ContainerHeartbeatHandler.class),
-        mock(TaskCommunicatorManagerInterface.class), new ContainerContextMatcher(), appContext);
+        mock(TaskCommManagerInterface.class), new ContainerContextMatcher(), appContext);
     AMNodeTracker amNodeTracker = new AMNodeTracker(eventHandler, appContext);
     doReturn(amContainerMap).when(appContext).getAllContainers();
     doReturn(amNodeTracker).when(appContext).getNodeTracker();
@@ -1400,7 +1400,7 @@ public class TestContainerReuse {
     AppContext appContext = mock(AppContext.class);
     doReturn(new Configuration(false)).when(appContext).getAMConf();
     AMContainerMap amContainerMap = new AMContainerMap(mock(ContainerHeartbeatHandler.class),
-        mock(TaskCommunicatorManagerInterface.class), new ContainerContextMatcher(), appContext);
+        mock(TaskCommManagerInterface.class), new ContainerContextMatcher(), appContext);
     AMNodeTracker amNodeTracker = new AMNodeTracker(eventHandler, appContext);
     doReturn(amContainerMap).when(appContext).getAllContainers();
     doReturn(amNodeTracker).when(appContext).getNodeTracker();
@@ -1536,7 +1536,7 @@ public class TestContainerReuse {
     AppContext appContext = mock(AppContext.class);
     doReturn(new Configuration(false)).when(appContext).getAMConf();
     AMContainerMap amContainerMap = new AMContainerMap(mock(ContainerHeartbeatHandler.class),
-        mock(TaskCommunicatorManagerInterface.class), new ContainerContextMatcher(), appContext);
+        mock(TaskCommManagerInterface.class), new ContainerContextMatcher(), appContext);
     AMNodeTracker amNodeTracker = new AMNodeTracker(eventHandler, appContext);
     doReturn(amContainerMap).when(appContext).getAllContainers();
     doReturn(amNodeTracker).when(appContext).getNodeTracker();
