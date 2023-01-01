@@ -28,6 +28,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.LocalResource;
+import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.client.DAGClient;
@@ -35,19 +36,22 @@ import org.apache.tez.dag.api.client.MRDAGClient;
 
 @InterfaceAudience.Private
 public class MRTezClient extends TezClient {
-  public MRTezClient(String name, TezConfiguration tezConf, boolean isSession,
+  public MRTezClient(String name,
+                     TezConfiguration tezConf,
+                     boolean isSession,
                      @Nullable Map<String, LocalResource> localResources,
                      @Nullable Credentials credentials) {
     super(name, tezConf, isSession, localResources, credentials);
   }
 
   // To be used only by YarnRunner
-  public DAGClient submitDAGApplication(ApplicationId appId, org.apache.tez.dag.api.DAG dag)
-      throws TezException, IOException {
+  public DAGClient submitDAGApplication(ApplicationId appId, org.apache.tez.dag.api.DAG dag) throws TezException, IOException {
     return super.submitDAGApplication(appId, dag);
   }
 
-  public static MRDAGClient getDAGClient(ApplicationId appId, TezConfiguration tezConf, FrameworkClient frameworkClient)
+  public static MRDAGClient getDAGClient(ApplicationId appId,
+                                         TezConfiguration tezConf,
+                                         FrameworkClient frameworkClient)
       throws IOException, TezException {
     return new MRDAGClient(TezClient.getDAGClient(appId, tezConf, frameworkClient));
   }

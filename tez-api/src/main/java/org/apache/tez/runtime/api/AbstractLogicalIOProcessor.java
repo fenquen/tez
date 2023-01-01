@@ -21,36 +21,35 @@ import org.apache.hadoop.classification.InterfaceAudience.Public;
 
 /**
  * Abstract representation of the interface {@link LogicalIOProcessor}.
- * Implements the base logic of some methods into this class and is expected 
+ * Implements the base logic of some methods into this class and is expected
  * to be the base class that is derived to implement the user {@link Processor}
- *
  */
 @Public
 public abstract class AbstractLogicalIOProcessor implements LogicalIOProcessor,
-    LogicalIOProcessorFrameworkInterface {
-  private final ProcessorContext context;
+        LogicalIOProcessorFrameworkInterface {
+    private final ProcessorContext context;
 
-  /**
-   * Constructor an instance of the LogicalProcessor. Classes extending this one to create a
-   * LogicalProcessor, must provide the same constructor so that Tez can create an instance of the
-   * class at runtime.
-   *
-   * @param context the {@link org.apache.tez.runtime.api.ProcessorContext} which provides
-   *                the Processor with context information within the running task.
-   */
-  public AbstractLogicalIOProcessor(ProcessorContext context) {
-    this.context = context;
-  }
+    /**
+     * Constructor an instance of the LogicalProcessor. Classes extending this one to create a
+     * LogicalProcessor, must provide the same constructor so that Tez can create an instance of the
+     * class at runtime.
+     *
+     * @param context the {@link org.apache.tez.runtime.api.ProcessorContext} which provides
+     *                the Processor with context information within the running task.
+     */
+    public AbstractLogicalIOProcessor(ProcessorContext context) {
+        this.context = context;
+    }
 
-  @Override
-  public abstract void initialize() throws Exception;
+    @Override
+    public abstract void initialize() throws Exception;
 
-  public final ProcessorContext getContext() {
-    return context;
-  }
+    public final ProcessorContext getContext() {
+        return context;
+    }
 
-  @Override
-  public void abort() {
-  }
+    @Override
+    public void abort() {
+    }
 
 }

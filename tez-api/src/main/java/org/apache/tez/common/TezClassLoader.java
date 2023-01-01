@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * ClassLoader to allow addition of new paths to classpath in the runtime.
- *
+ * <p>
  * It uses URLClassLoader with this class' classloader as parent classloader.
  * And hence first delegates the resource loading to parent and then to the URLs
  * added. The process must be setup to use by invoking setupTezClassLoader() which sets
@@ -33,43 +33,36 @@ import org.slf4j.LoggerFactory;
  * from TezClassLoader.
  */
 public class TezClassLoader extends URLClassLoader {
-  private static final TezClassLoader INSTANCE;
-  private static final Logger LOG = LoggerFactory.getLogger(TezClassLoader.class);
+    private static final TezClassLoader INSTANCE = AccessController.doPrivileged((PrivilegedAction<TezClassLoader>) TezClassLoader::new);
 
-  static {
-    INSTANCE = AccessController.doPrivileged(new PrivilegedAction<TezClassLoader>() {
-      public TezClassLoader run() {
-        return new TezClassLoader();
-      }
-    });
-  }
+    private static final Logger LOG = LoggerFactory.getLogger(TezClassLoader.class);
 
-  private TezClassLoader() {
-    super(new URL[] {}, TezClassLoader.class.getClassLoader());
+    private TezClassLoader() {
+        super(new URL[]{}, TezClassLoader.class.getClassLoader());
 
-    LOG.info(
-        "Created TezClassLoader with parent classloader: {}, thread: {}, system classloader: {}",
-        TezClassLoader.class.getClassLoader(), Thread.currentThread().getId(),
-        ClassLoader.getSystemClassLoader());
-  }
+        LOG.info(
+                "Created TezClassLoader with parent classloader: {}, thread: {}, system classloader: {}",
+                TezClassLoader.class.getClassLoader(), Thread.currentThread().getId(),
+                ClassLoader.getSystemClassLoader());
+    }
 
-  public void addURL(URL url) {
-    super.addURL(url);
-  }
+    public void addURL(URL url) {
+        super.addURL(url);
+    }
 
-  public static TezClassLoader getInstance() {
-    return INSTANCE;
-  }
+    public static TezClassLoader getInstance() {
+        return INSTANCE;
+    }
 
-  public static void setupTezClassLoader() {
-    LOG.debug(
-        "Setting up TezClassLoader: thread: {}, current thread classloader: {} system classloader: {}",
-        Thread.currentThread().getId(), Thread.currentThread().getContextClassLoader(),
-        ClassLoader.getSystemClassLoader());
-    Thread.currentThread().setContextClassLoader(INSTANCE);
-  }
+    public static void setupTezClassLoader() {
+        LOG.debug(
+                "Setting up TezClassLoader: thread: {}, current thread classloader: {} system classloader: {}",
+                Thread.currentThread().getId(), Thread.currentThread().getContextClassLoader(),
+                ClassLoader.getSystemClassLoader());
+        Thread.currentThread().setContextClassLoader(INSTANCE);
+    }
 
-  public static void setupForConfiguration(Configuration configuration) {
-    configuration.setClassLoader(INSTANCE);
-  }
+    public static void setupForConfiguration(Configuration configuration) {
+        configuration.setClassLoader(INSTANCE);
+    }
 }

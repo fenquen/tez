@@ -20,33 +20,34 @@ import org.apache.tez.common.ServicePluginLifecycle;
 
 /**
  * Provides service lifecycle management over ServicePlugins using {@link AbstractService}
+ *
  * @param <T>
  */
 public class ServicePluginLifecycleAbstractService<T extends ServicePluginLifecycle> extends AbstractService {
 
-  private final T service;
+    private final T service;
 
-  public ServicePluginLifecycleAbstractService(T service) {
-    super(service.getClass().getName());
-    this.service = service;
-  }
+    public ServicePluginLifecycleAbstractService(T service) {
+        super(service.getClass().getName());
+        this.service = service;
+    }
 
-  @Override
-  public void serviceInit(Configuration unused) throws Exception {
-    service.initialize();
-  }
+    @Override
+    public void serviceInit(Configuration unused) throws Exception {
+        service.initialize();
+    }
 
-  @Override
-  public void serviceStart() throws Exception {
-    service.start();
-  }
+    @Override
+    public void serviceStart() throws Exception {
+        service.start();
+    }
 
-  @Override
-  public void serviceStop() throws Exception {
-    service.shutdown();
-  }
+    @Override
+    public void serviceStop() throws Exception {
+        service.shutdown();
+    }
 
-  public T getService() {
-    return service;
-  }
+    public T getService() {
+        return service;
+    }
 }

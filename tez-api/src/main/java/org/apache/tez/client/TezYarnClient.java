@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,75 +36,75 @@ import org.apache.tez.dag.api.TezException;
 @Private
 public class TezYarnClient extends FrameworkClient {
 
-  private final YarnClient yarnClient;
+    private final YarnClient yarnClient;
 
-  private volatile boolean isRunning;
+    private volatile boolean isRunning;
 
-  protected TezYarnClient(YarnClient yarnClient) {
-    this.yarnClient = yarnClient;
-  }
-
-  @Override
-  public void init(TezConfiguration tezConf) {
-    yarnClient.init(new YarnConfiguration(tezConf));
-  }
-
-  @Override
-  public void start() {
-    yarnClient.start();
-    isRunning = true;
-  }
-
-  @Override
-  public void stop() {
-    isRunning = false;
-    yarnClient.stop();
-  }
-
-  @Override
-  public final void close() throws IOException {
-    yarnClient.close();
-  }
-
-  @Override
-  public YarnClientApplication createApplication() throws YarnException, IOException {
-    return yarnClient.createApplication();
-  }
-
-  @Override
-  public ApplicationId submitApplication(ApplicationSubmissionContext appSubmissionContext)
-      throws YarnException, IOException, TezException {
-	ApplicationId appId= yarnClient.submitApplication(appSubmissionContext);
-    ApplicationReport appReport = getApplicationReport(appId);
-    if (appReport.getYarnApplicationState() == YarnApplicationState.FAILED){
-      throw new TezException("Failed to submit application to YARN"
-          + ", applicationId=" + appId
-          + ", diagnostics=" + appReport.getDiagnostics());
+    protected TezYarnClient(YarnClient yarnClient) {
+        this.yarnClient = yarnClient;
     }
-    return appId;
-  }
 
-  @Override
-  public void killApplication(ApplicationId appId) throws YarnException, IOException {
-    yarnClient.killApplication(appId);
-  }
-
-  @Override
-  public ApplicationReport getApplicationReport(ApplicationId appId) throws YarnException, IOException {
-    ApplicationReport report = yarnClient.getApplicationReport(appId);
-    if (report.getYarnApplicationState() == null) {
-      // The state can be null when the ResourceManager does not know about the app but the YARN
-      // application history server has an incomplete entry for it. Treat this scenario as if the
-      // application does not exist, since the final app status cannot be determined. This also
-      // matches the behavior for this scenario if the history server was not configured.
-      throw new ApplicationNotFoundException("YARN reports no state for application "
-          + appId);
+    @Override
+    public void init(TezConfiguration tezConf) {
+        yarnClient.init(new YarnConfiguration(tezConf));
     }
-    return report;
-  }
 
-  @Override
-  public boolean isRunning() throws IOException {
-    return isRunning;
-  }
+    @Override
+    public void start() {
+        yarnClient.start();
+        isRunning = true;
+    }
+
+    @Override
+    public void stop() {
+        isRunning = false;
+        yarnClient.stop();
+    }
+
+    @Override
+    public final void close() throws IOException {
+        yarnClient.close();
+    }
+
+    @Override
+    public YarnClientApplication createApplication() throws YarnException, IOException {
+        return yarnClient.createApplication();
+    }
+
+    @Override
+    public ApplicationId submitApplication(ApplicationSubmissionContext appSubmissionContext)
+            throws YarnException, IOException, TezException {
+        ApplicationId appId = yarnClient.submitApplication(appSubmissionContext);
+        ApplicationReport appReport = getApplicationReport(appId);
+        if (appReport.getYarnApplicationState() == YarnApplicationState.FAILED) {
+            throw new TezException("Failed to submit application to YARN"
+                    + ", applicationId=" + appId
+                    + ", diagnostics=" + appReport.getDiagnostics());
+        }
+        return appId;
+    }
+
+    @Override
+    public void killApplication(ApplicationId appId) throws YarnException, IOException {
+        yarnClient.killApplication(appId);
+    }
+
+    @Override
+    public ApplicationReport getApplicationReport(ApplicationId appId) throws YarnException, IOException {
+        ApplicationReport report = yarnClient.getApplicationReport(appId);
+        if (report.getYarnApplicationState() == null) {
+            // The state can be null when the ResourceManager does not know about the app but the YARN
+            // application history server has an incomplete entry for it. Treat this scenario as if the
+            // application does not exist, since the final app status cannot be determined. This also
+            // matches the behavior for this scenario if the history server was not configured.
+            throw new ApplicationNotFoundException("YARN reports no state for application "
+                    + appId);
+        }
+        return report;
+    }
+
+    @Override
+    public boolean isRunning() throws IOException {
+        return isRunning;
+    }
 }

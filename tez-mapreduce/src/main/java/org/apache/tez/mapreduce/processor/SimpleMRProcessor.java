@@ -34,64 +34,71 @@ import com.google.common.collect.Lists;
 
 /**
  * A {@link SimpleProcessor} that provides Map Reduce specific post
- * processing by calling commit (if needed) on all {@link MROutput}s 
- * connected to this {@link Processor}. 
+ * processing by calling commit (if needed) on all {@link MROutput}s
+ * connected to this {@link Processor}.
  */
 @Public
 @Evolving
 public abstract class SimpleMRProcessor extends SimpleProcessor {
-  private static final Logger LOG = LoggerFactory.getLogger(SimpleMRProcessor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SimpleMRProcessor.class);
 
-  public SimpleMRProcessor(ProcessorContext context) {
-    super(context);
-  }
+    public SimpleMRProcessor(ProcessorContext context) {
+        super(context);
+    }
 
-  @Override
-  protected void postOp() throws Exception {
-    if (getOutputs() == null) {
-      return; // No post op
-    }
-    List<MROutput> mrOuts = Lists.newLinkedList();
-    for (LogicalOutput output : getOutputs().values()) {
-      if (output instanceof MROutput) {
-        MROutput mrOutput = (MROutput) output;
-        mrOutput.flush();
-        if (mrOutput.isCommitRequired()) {
-          mrOuts.add((MROutput) output);
+    @Override
+    protected void postOp() throws Exception {
+        if (getOutputs() == null) {
+            return; // No post op
         }
-      }
-    }
-    if (mrOuts.size() > 0) {
-      // This will loop till the AM asks for the task to be killed. As
-      // against, the AM sending a signal to the task to kill itself
-      // gracefully. The AM waits for the current committer to successfully
-      // complete and then kills us. Until then we wait in case the
-      // current committer fails and we get chosen to commit.
-      while (!getContext().canCommit()) {
-        Thread.sleep(100);
-      }
-      boolean willAbort = false;
-      Exception savedEx = null;
-      for (MROutput output : mrOuts) {
-        try {
-          output.commit();
-        } catch (IOException ioe) {
-          LOG.warn("Error in committing output", ioe);
-          willAbort = true;
-          savedEx = ioe;
-          break;
+
+        List<MROutput> mrOuts = Lists.newLinkedList();
+
+        for (LogicalOutput output : getOutputs().values()) {
+            if (output instanceof MROutput) {
+                MROutput mrOutput = (MROutput) output;
+                mrOutput.flush();
+                if (mrOutput.isCommitRequired()) {
+                    mrOuts.add((MROutput) output);
+                }
+            }
         }
-      }
-      if (willAbort == true) {
-        for (MROutput output : mrOuts) {
-          try {
-            output.abort();
-          } catch (IOException ioe) {
-            LOG.warn("Error in aborting output", ioe);
-          }
+
+        if (mrOuts.size() > 0) {
+            // This will loop till the AM asks for the task to be killed. As
+            // against, the AM sending a signal to the task to kill itself
+            // gracefully. The AM waits for the current committer to successfully
+            // complete and then kills us. Until then we wait in case the
+            // current committer fails and we get chosen to commit.
+            while (!getContext().canCommit()) {
+                Thread.sleep(100);
+            }
+
+            boolean willAbort = false;
+            Exception savedEx = null;
+
+            for (MROutput output : mrOuts) {
+                try {
+                    output.commit();
+                } catch (IOException ioe) {
+                    LOG.warn("Error in committing output", ioe);
+                    willAbort = true;
+                    savedEx = ioe;
+                    break;
+                }
+            }
+
+            if (willAbort) {
+                for (MROutput output : mrOuts) {
+                    try {
+                        output.abort();
+                    } catch (IOException ioe) {
+                        LOG.warn("Error in aborting output", ioe);
+                    }
+                }
+
+                throw savedEx;
+            }
         }
-        throw savedEx;
-      }
     }
-  }
 }

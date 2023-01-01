@@ -90,7 +90,7 @@ public interface VertexManagerPluginContext {
    * is represented by the source vertex name
    * @return Map of source vertex name and edge property
    */
-  public Map<String, EdgeProperty> getInputVertexEdgeProperties();
+  Map<String, EdgeProperty> getInputVertexEdgeProperties();
   
   /**
    * Get the edge properties on the output edges of this vertex. The output edge 

@@ -1,20 +1,20 @@
 /**
-* Licensed to the Apache Software Foundation (ASF) under one
-* or more contributor license agreements.  See the NOTICE file
-* distributed with this work for additional information
-* regarding copyright ownership.  The ASF licenses this file
-* to you under the Apache License, Version 2.0 (the
-* "License"); you may not use this file except in compliance
-* with the License.  You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.tez.dag.app;
 
@@ -50,95 +50,101 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 @InterfaceAudience.Private
 public interface AppContext {
 
-  DAGAppMaster getAppMaster();
+    DAGAppMaster getAppMaster();
 
-  Configuration getAMConf();
+    Configuration getAMConf();
 
-  ApplicationId getApplicationID();
+    ApplicationId getApplicationID();
 
-  TezDAGID getCurrentDAGID();
-  
-  long getCumulativeCPUTime();
-  
-  long getCumulativeGCTime();
+    TezDAGID getCurrentDAGID();
 
-  ApplicationAttemptId getApplicationAttemptId();
+    long getCumulativeCPUTime();
 
-  String getApplicationName();
+    long getCumulativeGCTime();
 
-  Map<ApplicationAccessType, String> getApplicationACLs();
+    ApplicationAttemptId getApplicationAttemptId();
 
-  long getStartTime();
+    String getApplicationName();
 
-  String getUser();
+    Map<ApplicationAccessType, String> getApplicationACLs();
 
-  DAG getCurrentDAG();
+    long getStartTime();
 
-  ListeningExecutorService getExecService();
+    String getUser();
 
-  void setDAG(DAG dag);
+    DAG getCurrentDAG();
 
-  void setDAGRecoveryData(DAGRecoveryData dagRecoveryData);
+    ListeningExecutorService getExecService();
 
-  Set<String> getAllDAGIDs();
+    void setDAG(DAG dag);
 
-  @SuppressWarnings("rawtypes")
-  EventHandler getEventHandler();
+    void setDAGRecoveryData(DAGRecoveryData dagRecoveryData);
 
-  Clock getClock();
+    Set<String> getAllDAGIDs();
 
-  ClusterInfo getClusterInfo();
+    @SuppressWarnings("rawtypes")
+    EventHandler getEventHandler();
 
-  AMContainerMap getAllContainers();
+    Clock getClock();
 
-  AMNodeTracker getNodeTracker();
+    ClusterInfo getClusterInfo();
 
-  TaskSchedulerManager getTaskScheduler();
+    AMContainerMap getAllContainers();
 
-  TaskCommunicatorManagerInterface getTaskCommunicatorManager();
+    AMNodeTracker getNodeTracker();
 
-  boolean isSession();
+    TaskSchedulerManager getTaskScheduler();
 
-  boolean isLocal();
+    TaskCommunicatorManagerInterface getTaskCommunicatorManager();
 
-  DAGAppMasterState getAMState();
+    boolean isSession();
 
-  HistoryEventHandler getHistoryHandler();
+    boolean isLocal();
 
-  Path getCurrentRecoveryDir();
+    DAGAppMasterState getAMState();
 
-  boolean isRecoveryEnabled();
+    HistoryEventHandler getHistoryHandler();
 
-  ACLManager getAMACLManager();
+    Path getCurrentRecoveryDir();
 
-  String[] getLogDirs();
+    boolean isRecoveryEnabled();
 
-  String[] getLocalDirs();
+    ACLManager getAMACLManager();
 
-  String getAMUser();
+    String[] getLogDirs();
 
-  String getQueueName();
+    String[] getLocalDirs();
 
-  void setQueueName(String queueName);
+    String getAMUser();
 
-  /** Whether the AM is in the process of shutting down/completing */
-  boolean isAMInCompletionState();
+    String getQueueName();
 
-  Credentials getAppCredentials();
+    void setQueueName(String queueName);
 
-  public Integer getTaskCommunicatorIdentifier(String name);
-  public Integer getTaskScheduerIdentifier(String name);
-  public Integer getContainerLauncherIdentifier(String name);
+    /** Whether the AM is in the process of shutting down/completing */
+    boolean isAMInCompletionState();
 
-  public String getTaskCommunicatorName(int taskCommId);
-  public String getTaskSchedulerName(int schedulerId);
-  public String getContainerLauncherName(int launcherId);
+    Credentials getAppCredentials();
 
-  public String getTaskCommunicatorClassName(int taskCommId);
-  public String getTaskSchedulerClassName(int schedulerId);
-  public String getContainerLauncherClassName(int launcherId);
+    public Integer getTaskCommunicatorIdentifier(String name);
 
-  public HadoopShim getHadoopShim();
+    public Integer getTaskScheduerIdentifier(String name);
 
-  public DAGRecoveryData getDAGRecoveryData();
+    public Integer getContainerLauncherIdentifier(String name);
+
+    public String getTaskCommunicatorName(int taskCommId);
+
+    public String getTaskSchedulerName(int schedulerId);
+
+    public String getContainerLauncherName(int launcherId);
+
+    public String getTaskCommunicatorClassName(int taskCommId);
+
+    public String getTaskSchedulerClassName(int schedulerId);
+
+    public String getContainerLauncherClassName(int launcherId);
+
+    public HadoopShim getHadoopShim();
+
+    public DAGRecoveryData getDAGRecoveryData();
 }

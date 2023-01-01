@@ -49,7 +49,7 @@ public interface Input {
    * 
    * @throws Exception
    */
-  public void start() throws Exception;
+  void start() throws Exception;
 
   /**
    * Gets an instance of the {@link Reader} for this <code>Output</code>
@@ -58,5 +58,5 @@ public interface Input {
    * @throws Exception
    *           if an error occurs
    */
-  public Reader getReader() throws Exception;
+  Reader getReader() throws Exception;
 }
