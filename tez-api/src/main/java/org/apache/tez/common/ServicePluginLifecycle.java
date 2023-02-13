@@ -30,19 +30,19 @@ import org.apache.hadoop.classification.InterfaceStability;
 @InterfaceStability.Unstable
 public interface ServicePluginLifecycle {
 
-  /**
-   * Perform any additional initialization which may be required beyond the constructor.
-   */
-  void initialize() throws Exception;
+    /**
+     * Perform any additional initialization which may be required beyond the constructor.
+     */
+    void initialize() throws Exception;
 
-  /**
-   * Start the service. This will be invoked after initialization.
-   */
-  void start() throws Exception;
+    /**
+     * Start the service. This will be invoked after initialization.
+     */
+    void start() throws Exception;
 
-  /**
-   * Shutdown the service. This will be invoked when the service is shutting down.
-   */
-  void shutdown() throws Exception;
+    /**
+     * Shutdown the service. This will be invoked when the service is shutting down.
+     */
+    void shutdown() throws Exception;
 
 }

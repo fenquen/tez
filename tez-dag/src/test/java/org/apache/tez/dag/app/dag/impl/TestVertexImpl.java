@@ -3888,11 +3888,11 @@ public class TestVertexImpl {
   public void testVertexManagerInit() {
     initAllVertices(VertexState.INITED);
     VertexImpl v2 = vertices.get("vertex2");
-    assertTrue(v2.getVertexManager().getPlugin()
+    assertTrue(v2.getVertexManager().getVertexManagerPlugin()
         instanceof ImmediateStartVertexManager);
 
     VertexImpl v6 = vertices.get("vertex6");
-    assertTrue(v6.getVertexManager().getPlugin()
+    assertTrue(v6.getVertexManager().getVertexManagerPlugin()
         instanceof ShuffleVertexManager);
   }
 
@@ -4606,17 +4606,17 @@ public class TestVertexImpl {
     setupPostDagCreation(false);
     initAllVertices(VertexState.INITED);
     Assert.assertEquals(ImmediateStartVertexManager.class, 
-        vertices.get("vertex1").getVertexManager().getPlugin().getClass());
+        vertices.get("vertex1").getVertexManager().getVertexManagerPlugin().getClass());
     Assert.assertEquals(ShuffleVertexManager.class, 
-        vertices.get("vertex2").getVertexManager().getPlugin().getClass());
+        vertices.get("vertex2").getVertexManager().getVertexManagerPlugin().getClass());
     Assert.assertEquals(InputReadyVertexManager.class, 
-        vertices.get("vertex3").getVertexManager().getPlugin().getClass());
+        vertices.get("vertex3").getVertexManager().getVertexManagerPlugin().getClass());
     Assert.assertEquals(ImmediateStartVertexManager.class, 
-        vertices.get("vertex4").getVertexManager().getPlugin().getClass());
+        vertices.get("vertex4").getVertexManager().getVertexManagerPlugin().getClass());
     Assert.assertEquals(ImmediateStartVertexManager.class, 
-        vertices.get("vertex5").getVertexManager().getPlugin().getClass());
+        vertices.get("vertex5").getVertexManager().getVertexManagerPlugin().getClass());
     Assert.assertEquals(InputReadyVertexManager.class, 
-        vertices.get("vertex6").getVertexManager().getPlugin().getClass());
+        vertices.get("vertex6").getVertexManager().getVertexManagerPlugin().getClass());
   }
 
 
@@ -4656,7 +4656,7 @@ public class TestVertexImpl {
     Assert.assertEquals(VertexState.INITED, v1.getState());
     Assert.assertEquals(numTasks, v1.getTotalTasks());
     Assert.assertEquals(RootInputVertexManager.class.getName(), v1
-        .getVertexManager().getPlugin().getClass().getName());
+        .getVertexManager().getVertexManagerPlugin().getClass().getName());
     for (int i=0; i < v1Hints.size(); ++i) {
       Assert.assertEquals(v1Hints.get(i), v1.getTaskLocationHints()[i]);
     }
@@ -4834,7 +4834,7 @@ public class TestVertexImpl {
 
     Assert.assertEquals(VertexState.FAILED, v1.getState());
     Assert.assertEquals(RootInputVertexManager.class.getName(), v1
-        .getVertexManager().getPlugin().getClass().getName());
+        .getVertexManager().getVertexManagerPlugin().getClass().getName());
     Assert.assertEquals(true, initializerManager1.hasShutDown);
     Assert.assertTrue(StringUtils.join(v1.getDiagnostics(), ",")
         .contains(VertexTerminationCause.ROOT_INPUT_INIT_FAILURE.name()));
@@ -4848,7 +4848,7 @@ public class TestVertexImpl {
     dispatcher.await();
     Assert.assertEquals(VertexState.FAILED, v2.getState());
     Assert.assertEquals(RootInputVertexManager.class.getName(), v2
-        .getVertexManager().getPlugin().getClass().getName());
+        .getVertexManager().getVertexManagerPlugin().getClass().getName());
     Assert.assertEquals(true, initializerManager2.hasShutDown);
     Assert.assertTrue(StringUtils.join(v1.getDiagnostics(), ",")
         .contains(VertexTerminationCause.ROOT_INPUT_INIT_FAILURE.name()));
@@ -5431,7 +5431,7 @@ public class TestVertexImpl {
     assertTrue(m9.getState().equals(VertexState.INITED));
     assertTrue(m5.getState().equals(VertexState.INITED));
     assertTrue(m8.getState().equals(VertexState.INITED));
-    assertTrue(m5.getVertexManager().getPlugin() instanceof ImmediateStartVertexManager);
+    assertTrue(m5.getVertexManager().getVertexManagerPlugin() instanceof ImmediateStartVertexManager);
 
     //Start M9
     dispatcher.getEventHandler().handle(new VertexEvent(m9.getVertexId(),
@@ -5775,7 +5775,7 @@ public class TestVertexImpl {
     Assert.assertEquals(VertexState.INITED, v1.getState());
     Assert.assertEquals(5, v1.getTotalTasks());
     Assert.assertEquals(RootInputVertexManager.class.getName(), v1
-        .getVertexManager().getPlugin().getClass().getName());
+        .getVertexManager().getVertexManagerPlugin().getClass().getName());
     for (int i=0; i < v1Hints.size(); ++i) {
       Assert.assertEquals(v1Hints.get(i), v1.getTaskLocationHints()[i]);
     }
@@ -5827,7 +5827,7 @@ public class TestVertexImpl {
     Assert.assertEquals(VertexState.INITED, v2.getState());
     Assert.assertEquals(10, v2.getTotalTasks());
     Assert.assertEquals(RootInputVertexManager.class.getName(), v2
-        .getVertexManager().getPlugin().getClass().getName());
+        .getVertexManager().getVertexManagerPlugin().getClass().getName());
     for (int i=0; i < v2Hints.size(); ++i) {
       Assert.assertEquals(v2Hints.get(i), v2.getTaskLocationHints()[i]);
     }
@@ -5876,7 +5876,7 @@ public class TestVertexImpl {
     Assert.assertEquals(VertexState.INITED, v1.getState());
     Assert.assertEquals(5, v1.getTotalTasks());
     Assert.assertEquals(RootInputVertexManager.class.getName(), v1
-        .getVertexManager().getPlugin().getClass().getName());
+        .getVertexManager().getVertexManagerPlugin().getClass().getName());
     for (int i=0; i < v1Hints.size(); ++i) {
       Assert.assertEquals(v1Hints.get(i), v1.getTaskLocationHints()[i]);
     }
@@ -5916,7 +5916,7 @@ public class TestVertexImpl {
     Assert.assertEquals(VertexState.INITED, v2.getState());
     Assert.assertEquals(10, v2.getTotalTasks());
     Assert.assertEquals(RootInputVertexManager.class.getName(), v2
-        .getVertexManager().getPlugin().getClass().getName());
+        .getVertexManager().getVertexManagerPlugin().getClass().getName());
     for (int i=0; i < v2Hints.size(); ++i) {
       Assert.assertEquals(v2Hints.get(i), v2.getTaskLocationHints()[i]);
     }
@@ -5986,7 +5986,7 @@ public class TestVertexImpl {
     Assert.assertEquals(VertexState.INITED, v3.getState());
     Assert.assertEquals(expectedNumTasks, v3.getTotalTasks());
     Assert.assertEquals(RootInputSpecUpdaterVertexManager.class.getName(), v3.getVertexManager()
-        .getPlugin().getClass().getName());
+        .getVertexManagerPlugin().getClass().getName());
     Assert.assertEquals(true, initializerManager1.hasShutDown);
     
     for (int i = 0; i < expectedNumTasks; i++) {
@@ -6016,7 +6016,7 @@ public class TestVertexImpl {
     Assert.assertEquals(VertexState.INITED, v4.getState());
     Assert.assertEquals(expectedNumTasks, v4.getTotalTasks());
     Assert.assertEquals(RootInputSpecUpdaterVertexManager.class.getName(), v4.getVertexManager()
-        .getPlugin().getClass().getName());
+        .getVertexManagerPlugin().getClass().getName());
     Assert.assertEquals(true, initializerManager1.hasShutDown);
     
     for (int i = 0; i < expectedNumTasks; i++) {
@@ -6708,7 +6708,7 @@ public class TestVertexImpl {
     RootInputInitializerManagerControlled initializerManager1 = v1.getRootInputInitializerManager();
     initializerManager1.completeInputInitialization();
     dispatcher.await();
-    Assert.assertEquals(VertexManagerWithException.class, v1.vertexManager.getPlugin().getClass());
+    Assert.assertEquals(VertexManagerWithException.class, v1.vertexManager.getVertexManagerPlugin().getClass());
     Assert.assertEquals(VertexState.FAILED, v1.getState());
     Assert.assertTrue(initializerManager1.hasShutDown);
     String diagnostics = StringUtils.join(v1.getDiagnostics(), ",");
@@ -6736,7 +6736,7 @@ public class TestVertexImpl {
         VertexEventType.V_START));
     dispatcher.await();
     
-    Assert.assertEquals(VertexManagerWithException.class, v1.vertexManager.getPlugin().getClass());
+    Assert.assertEquals(VertexManagerWithException.class, v1.vertexManager.getVertexManagerPlugin().getClass());
     Assert.assertEquals(VertexState.FAILED, v1.getState());
     String diagnostics = StringUtils.join(v1.getDiagnostics(), ",");
     Assert.assertTrue(diagnostics.contains(VMExceptionLocation.OnVertexStarted.name()));
@@ -6771,8 +6771,8 @@ public class TestVertexImpl {
         TaskAttemptStateInternal.SUCCEEDED));
     dispatcher.await();
 
-    Assert.assertEquals(VertexManagerWithException.class, v1.vertexManager.getPlugin().getClass());
-    Assert.assertEquals(VertexManagerWithException.class, v2.vertexManager.getPlugin().getClass());
+    Assert.assertEquals(VertexManagerWithException.class, v1.vertexManager.getVertexManagerPlugin().getClass());
+    Assert.assertEquals(VertexManagerWithException.class, v2.vertexManager.getVertexManagerPlugin().getClass());
     Assert.assertEquals(VertexState.FAILED, v2.getState());
     String diagnostics = StringUtils.join(v2.getDiagnostics(), ",");
     Assert.assertTrue(diagnostics.contains(VMExceptionLocation.OnSourceTaskCompleted.name()));
@@ -7116,7 +7116,7 @@ public class TestVertexImpl {
 
     @Override
     public void onRootVertexInitialized(String inputName, InputDescriptor inputDescriptor,
-        List<Event> events) {
+        List<Event> eventList) {
       Map<String, InputSpecUpdate> map = new HashMap<String, InputSpecUpdate>();
       if (getContext().getUserPayload().deepCopyAsArray()[0] == 0) {
         map.put("input3", InputSpecUpdate.createAllTaskInputSpecUpdate(4));
@@ -7193,7 +7193,7 @@ public class TestVertexImpl {
 
     @Override
     public void onRootVertexInitialized(String inputName, InputDescriptor inputDescriptor,
-                                        List<Event> events) throws Exception {
+                                        List<Event> eventList) throws Exception {
       numInitializedInputs.incrementAndGet();
     }
   }
@@ -7233,11 +7233,11 @@ public class TestVertexImpl {
     
     @Override
     public void onRootVertexInitialized(String inputName,
-        InputDescriptor inputDescriptor, List<Event> events) {
+        InputDescriptor inputDescriptor, List<Event> eventList) {
       if (this.exLocation == VMExceptionLocation.OnRootVertexInitialized) {
         throw new RuntimeException(this.exLocation.name());
       }
-      super.onRootVertexInitialized(inputName, inputDescriptor, events);
+      super.onRootVertexInitialized(inputName, inputDescriptor, eventList);
     }
     
     @Override

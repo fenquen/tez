@@ -209,12 +209,12 @@ public class CartesianProductVertexManager extends VertexManagerPlugin {
    * Currently direct input to cartesian product vertex is not supported
    * @param inputName
    * @param inputDescriptor
-   * @param events
+   * @param eventList
    * @throws Exception
    */
   @Override
   public void onRootVertexInitialized(String inputName, InputDescriptor inputDescriptor,
-                                      List<Event> events) throws Exception {
+                                      List<Event> eventList) throws Exception {
     throw new TezException("Direct input to cartesian product vertex is not supported yet");
   }
 

@@ -43,182 +43,182 @@ import org.apache.tez.common.ContainerSignatureMatcher;
 @InterfaceStability.Unstable
 public interface TaskSchedulerContext extends ServicePluginContextBase {
 
-  class AppFinalStatus {
-    public final FinalApplicationStatus exitStatus;
-    public final String exitMessage;
-    public final String postCompletionTrackingUrl;
+    class AppFinalStatus {
+        public final FinalApplicationStatus exitStatus;
+        public final String exitMessage;
+        public final String postCompletionTrackingUrl;
 
-    public AppFinalStatus(FinalApplicationStatus exitStatus,
-                          String exitMessage,
-                          String posCompletionTrackingUrl) {
-      this.exitStatus = exitStatus;
-      this.exitMessage = exitMessage;
-      this.postCompletionTrackingUrl = posCompletionTrackingUrl;
+        public AppFinalStatus(FinalApplicationStatus exitStatus,
+                              String exitMessage,
+                              String posCompletionTrackingUrl) {
+            this.exitStatus = exitStatus;
+            this.exitMessage = exitMessage;
+            this.postCompletionTrackingUrl = posCompletionTrackingUrl;
+        }
     }
-  }
 
-  /**
-   * Indicates the state the AM is in.
-   */
-  enum AMState {
-    IDLE,
-    RUNNING_APP,
-    COMPLETED
-  }
+    /**
+     * Indicates the state the AM is in.
+     */
+    enum AMState {
+        IDLE,
+        RUNNING_APP,
+        COMPLETED
+    }
 
-  // TODO TEZ-2003 (post) TEZ-2664. Remove references to YARN constructs like Container, ContainerStatus, NodeReport
-  // TODO TEZ-2003 (post) TEZ-2668 Enhancements to TaskScheduler interfaces
-  // - setApplicationRegistrationData may not be relevant to non YARN clusters
-  // - getAppFinalStatus may not be relevant to non YARN clusters
-
-
-  /**
-   * Indicate to the framework that a container is being assigned to a task.
-   *
-   * @param task      the task for which a container is being assigned. This should be the same
-   *                  instance that was provided when requesting for an allocation
-   * @param appCookie the cookie which was provided while requesting allocation for this task
-   * @param container the actual container assigned to the task
-   */
-  void taskAllocated(Object task,
-                     Object appCookie,
-                     Container container);
+    // TODO TEZ-2003 (post) TEZ-2664. Remove references to YARN constructs like Container, ContainerStatus, NodeReport
+    // TODO TEZ-2003 (post) TEZ-2668 Enhancements to TaskScheduler interfaces
+    // - setApplicationRegistrationData may not be relevant to non YARN clusters
+    // - getAppFinalStatus may not be relevant to non YARN clusters
 
 
-  /**
-   * Indicate to the framework that a container has completed. This is typically used by sources
-   * which have
-   * a means to indicate a container failure to the scheduler (typically centrally managed
-   * schedulers - YARN)
-   *
-   * @param taskLastAllocated the task that was allocated to this container, if any. This is the
-   *                          same instance that was passed in while requesting an allocation
-   * @param containerStatus   the status with which the container ended
-   */
-  void containerCompleted(Object taskLastAllocated,
-                          ContainerStatus containerStatus);
-
-  /**
-   * Indicates to the framework that a container is being released.
-   *
-   * @param containerId the id of the container being released
-   */
-  void containerBeingReleased(ContainerId containerId);
+    /**
+     * Indicate to the framework that a container is being assigned to a task.
+     *
+     * @param task      the task for which a container is being assigned. This should be the same
+     *                  instance that was provided when requesting for an allocation
+     * @param appCookie the cookie which was provided while requesting allocation for this task
+     * @param container the actual container assigned to the task
+     */
+    void taskAllocated(Object task,
+                       Object appCookie,
+                       Container container);
 
 
-  /**
-   * Provide an update to the framework about the status of nodes available to this report
-   *
-   * @param updatedNodes a list of updated node reports
-   */
-  void nodesUpdated(List<NodeReport> updatedNodes);
+    /**
+     * Indicate to the framework that a container has completed. This is typically used by sources
+     * which have
+     * a means to indicate a container failure to the scheduler (typically centrally managed
+     * schedulers - YARN)
+     *
+     * @param taskLastAllocated the task that was allocated to this container, if any. This is the
+     *                          same instance that was passed in while requesting an allocation
+     * @param containerStatus   the status with which the container ended
+     */
+    void containerCompleted(Object taskLastAllocated,
+                            ContainerStatus containerStatus);
 
-  /**
-   * Inform the framework that an app shutdown is required. This should typically not be used, other
-   * than
-   * by the YARN scheduler.
-   */
-  void appShutdownRequested();
-
-  /**
-   * Provide an update to the framework about specific information about the source managed by this
-   * scheduler.
-   *
-   * @param maxContainerCapability the total resource capability of the source
-   * @param appAcls                ACLs for the source
-   * @param clientAMSecretKey      a secret key provided by the source
-   */
-  void setApplicationRegistrationData(
-      Resource maxContainerCapability,
-      Map<ApplicationAccessType, String> appAcls,
-      ByteBuffer clientAMSecretKey,
-      String queueName
-  );
-
-  /**
-   * Inform the framework that the scheduler has determined that a previously allocated container
-   * needs to be preempted
-   *
-   * @param containerId the containerId to be preempted
-   */
-  void preemptContainer(ContainerId containerId);
-
-  /**
-   * Get the final status for the application, which could be provided to the coordinator of the
-   * source.
-   * Primarily relevant to YARN
-   *
-   * @return the final Application status
-   */
-  AppFinalStatus getFinalAppStatus();
+    /**
+     * Indicates to the framework that a container is being released.
+     *
+     * @param containerId the id of the container being released
+     */
+    void containerBeingReleased(ContainerId containerId);
 
 
-  // Getters
+    /**
+     * Provide an update to the framework about the status of nodes available to this report
+     *
+     * @param updatedNodes a list of updated node reports
+     */
+    void nodesUpdated(List<NodeReport> updatedNodes);
 
-  /**
-   * Get the tracking URL for the application. Primarily relevant to YARN
-   *
-   * @return the trackingUrl for the app
-   */
-  String getAppTrackingUrl();
+    /**
+     * Inform the framework that an app shutdown is required. This should typically not be used, other
+     * than
+     * by the YARN scheduler.
+     */
+    void appShutdownRequested();
 
-  /**
-   * Request the framework for progress of the running DAG. This value must be between 0 and 1
-   *
-   * @return progress
-   */
-  float getProgress();
+    /**
+     * Provide an update to the framework about specific information about the source managed by this
+     * scheduler.
+     *
+     * @param maxContainerCapability the total resource capability of the source
+     * @param appAcls                ACLs for the source
+     * @param clientAMSecretKey      a secret key provided by the source
+     */
+    void setApplicationRegistrationData(
+            Resource maxContainerCapability,
+            Map<ApplicationAccessType, String> appAcls,
+            ByteBuffer clientAMSecretKey,
+            String queueName
+    );
 
-  /**
-   * A custom cluster identifier allocated to schedulers to generate an AppId, if not making
-   * use of YARN
-   *
-   * @return the custom cluster identifier
-   */
-  long getCustomClusterIdentifier();
+    /**
+     * Inform the framework that the scheduler has determined that a previously allocated container
+     * needs to be preempted
+     *
+     * @param containerId the containerId to be preempted
+     */
+    void preemptContainer(ContainerId containerId);
 
-  /**
-   * Get an instance of {@link ContainerSignatureMatcher} which can be used to check whether the
-   * specifications of a container match what is required by a task.
-   *
-   * @return an instance of {@link ContainerSignatureMatcher}
-   */
-  ContainerSignatureMatcher getContainerSignatureMatcher();
+    /**
+     * Get the final status for the application, which could be provided to the coordinator of the
+     * source.
+     * Primarily relevant to YARN
+     *
+     * @return the final Application status
+     */
+    AppFinalStatus getFinalAppStatus();
 
-  /**
-   * Get the application attempt id for the running application. Relevant when running under YARN
-   *
-   * @return the applicationAttemptId for the running app
-   */
-  ApplicationAttemptId getApplicationAttemptId();
 
-  /**
-   * Get the hostname on which the app is running
-   *
-   * @return the hostname
-   */
-  String getAppHostName();
+    // Getters
 
-  /**
-   * Get the port on which the DAG client is listening
-   *
-   * @return the client port
-   */
-  int getAppClientPort();
+    /**
+     * Get the tracking URL for the application. Primarily relevant to YARN
+     *
+     * @return the trackingUrl for the app
+     */
+    String getAppTrackingUrl();
 
-  /**
-   * Check whether the AM is running in session mode.
-   *
-   * @return true if session mode, false otherwise
-   */
-  boolean isSession();
+    /**
+     * Request the framework for progress of the running DAG. This value must be between 0 and 1
+     *
+     * @return progress
+     */
+    float getProgress();
 
-  /**
-   * Get the state of the AppMaster
-   *
-   * @return the app master state
-   */
-  AMState getAMState();
+    /**
+     * A custom cluster identifier allocated to schedulers to generate an AppId, if not making
+     * use of YARN
+     *
+     * @return the custom cluster identifier
+     */
+    long getCustomClusterIdentifier();
 
-  int getVertexIndexForTask(Object task);
+    /**
+     * Get an instance of {@link ContainerSignatureMatcher} which can be used to check whether the
+     * specifications of a container match what is required by a task.
+     *
+     * @return an instance of {@link ContainerSignatureMatcher}
+     */
+    ContainerSignatureMatcher getContainerSignatureMatcher();
+
+    /**
+     * Get the application attempt id for the running application. Relevant when running under YARN
+     *
+     * @return the applicationAttemptId for the running app
+     */
+    ApplicationAttemptId getApplicationAttemptId();
+
+    /**
+     * Get the hostname on which the app is running
+     *
+     * @return the hostname
+     */
+    String getAppHostName();
+
+    /**
+     * Get the port on which the DAG client is listening
+     *
+     * @return the client port
+     */
+    int getAppClientPort();
+
+    /**
+     * Check whether the AM is running in session mode.
+     *
+     * @return true if session mode, false otherwise
+     */
+    boolean isSession();
+
+    /**
+     * Get the state of the AppMaster
+     *
+     * @return the app master state
+     */
+    AMState getAMState();
+
+    int getVertexIndexForTask(Object task);
 }

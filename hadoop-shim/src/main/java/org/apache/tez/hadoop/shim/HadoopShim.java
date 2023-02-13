@@ -29,35 +29,37 @@ import org.apache.hadoop.yarn.api.records.FinalApplicationStatus;
 @Unstable
 public abstract class HadoopShim {
 
-  /**
-   * Set up Hadoop Caller Context
-   * @param context Context to be set
-   */
-  public void setHadoopCallerContext(String context) {
-    // Nothing to do
-  }
+    /**
+     * Set up Hadoop Caller Context
+     *
+     * @param context Context to be set
+     */
+    public void setHadoopCallerContext(String context) {
+        // Nothing to do
+    }
 
-  /**
-   * Clear the Hadoop Caller Context
-   */
-  public void clearHadoopCallerContext() {
-    // Nothing to do
-  }
+    /**
+     * Clear the Hadoop Caller Context
+     */
+    public void clearHadoopCallerContext() {
+        // Nothing to do
+    }
 
-  public static String CPU_RESOURCE = "CPU";
-  public static String MEMORY_RESOURCE = "MEMORY";
+    public static String CPU_RESOURCE = "CPU";
+    public static String MEMORY_RESOURCE = "MEMORY";
 
-  /**
-   * Extract supported Resource types from the RM's response when the AM registers
-   * @param response ApplicationMasterResponse from RM after registering
-   * @return Set of Resource types that are supported
-   */
-  public Set<String> getSupportedResourceTypes(RegisterApplicationMasterResponse response) {
-    return null;
-  }
+    /**
+     * Extract supported Resource types from the RM's response when the AM registers
+     *
+     * @param response ApplicationMasterResponse from RM after registering
+     * @return Set of Resource types that are supported
+     */
+    public Set<String> getSupportedResourceTypes(RegisterApplicationMasterResponse response) {
+        return null;
+    }
 
-  public FinalApplicationStatus applyFinalApplicationStatusCorrection(FinalApplicationStatus orig,
-      boolean isSessionMode, boolean isError) {
-    return orig;
-  }
+    public FinalApplicationStatus applyFinalApplicationStatusCorrection(FinalApplicationStatus orig,
+                                                                        boolean isSessionMode, boolean isError) {
+        return orig;
+    }
 }

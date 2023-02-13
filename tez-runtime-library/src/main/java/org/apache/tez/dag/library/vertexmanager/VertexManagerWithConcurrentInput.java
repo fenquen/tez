@@ -156,7 +156,7 @@ public class VertexManagerWithConcurrentInput extends VertexManagerPlugin {
 
   @Override
   public void onRootVertexInitialized(String inputName,
-                                      InputDescriptor inputDescriptor, List<Event> events) {
+                                      InputDescriptor inputDescriptor, List<Event> eventList) {
   }
 
   private void scheduleTasks() {

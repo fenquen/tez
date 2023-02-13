@@ -145,7 +145,7 @@ public abstract class EntityDescriptor<T extends EntityDescriptor<T>> implements
     @Override
     public String toString() {
         boolean hasPayload =
-                userPayload == null ? false : userPayload.getPayload() == null ? false : true;
+                userPayload != null && (userPayload.getPayload() != null);
         return "ClassName=" + className + ", hasPayload=" + hasPayload;
     }
 }

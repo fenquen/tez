@@ -96,8 +96,7 @@ import org.apache.tez.hadoop.shim.HadoopShimsLoader;
 import org.apache.tez.common.Preconditions;
 
 
-public class TaskSchedulerManager extends AbstractService implements
-        EventHandler<AMSchedulerEvent> {
+public class TaskSchedulerManager extends AbstractService implements EventHandler<AMSchedulerEvent> {
     static final Logger LOG = LoggerFactory.getLogger(TaskSchedulerManager.class);
 
     static final String APPLICATION_ID_PLACEHOLDER = "__APPLICATION_ID__";
@@ -172,15 +171,14 @@ public class TaskSchedulerManager extends AbstractService implements
     }
 
     /**
-     *
      * @param appContext
      * @param clientService
      * @param eventHandler
      * @param containerSignatureMatcher
      * @param webUI
-     * @param schedulerDescriptors the list of scheduler descriptors. Tez internal classes will not have the class names populated.
-     *                         An empty list defaults to using the YarnTaskScheduler as the only source.
-     * @param isLocalMode whether the AM is running in local mode
+     * @param schedulerDescriptors      the list of scheduler descriptors. Tez internal classes will not have the class names populated.
+     *                                  An empty list defaults to using the YarnTaskScheduler as the only source.
+     * @param isLocalMode               whether the AM is running in local mode
      */
     @SuppressWarnings("rawtypes")
     public TaskSchedulerManager(AppContext appContext,
@@ -201,8 +199,7 @@ public class TaskSchedulerManager extends AbstractService implements
         this.historyUrl = getHistoryUrl();
         this.isLocalMode = isLocalMode;
         this.hadoopShim = hadoopShim;
-        this.yarnSchedulerClassName = appContext.getAMConf().get(TezConfiguration.TEZ_AM_YARN_SCHEDULER_CLASS,
-                TezConfiguration.TEZ_AM_YARN_SCHEDULER_CLASS_DEFAULT);
+        yarnSchedulerClassName = appContext.getAMConf().get(TezConfiguration.TEZ_AM_YARN_SCHEDULER_CLASS, TezConfiguration.TEZ_AM_YARN_SCHEDULER_CLASS_DEFAULT);
         this.appCallbackExecutor = createAppCallbackExecutorService();
         if (this.webUI != null) {
             this.webUI.setHistoryUrl(this.historyUrl);
@@ -576,11 +573,13 @@ public class TaskSchedulerManager extends AbstractService implements
         String schedulerName = taskSchedulerDescriptor.getEntityName();
         if (schedulerName.equals(TezConstants.getTezYarnServicePluginName())) {
             return createYarnTaskScheduler(wrappedContext, schedulerId);
-        } else if (schedulerName.equals(TezConstants.getTezUberServicePluginName())) {
-            return createUberTaskScheduler(wrappedContext, schedulerId);
-        } else {
-            return createCustomTaskScheduler(wrappedContext, taskSchedulerDescriptor, schedulerId);
         }
+
+        if (schedulerName.equals(TezConstants.getTezUberServicePluginName())) {
+            return createUberTaskScheduler(wrappedContext, schedulerId);
+        }
+
+        return createCustomTaskScheduler(wrappedContext, taskSchedulerDescriptor, schedulerId);
     }
 
     @VisibleForTesting
@@ -643,8 +642,7 @@ public class TaskSchedulerManager extends AbstractService implements
     @Override
     public synchronized void serviceStart() throws Exception {
         // clientService is null in case of LocalDAGAppMaster
-        InetSocketAddress serviceAddr = clientService == null ? new InetSocketAddress("127.0.0.1", 0)
-                : clientService.getBindAddress();
+        InetSocketAddress serviceAddr = clientService == null ? new InetSocketAddress("127.0.0.1", 0) : clientService.getBindAddress();
         dagAppMaster = appContext.getAppMaster();
         // if web service is enabled then set tracking url. else disable it (value = "").
         // the actual url set on the rm web ui will be the proxy url set by WebAppProxyServlet, which
@@ -730,7 +728,7 @@ public class TaskSchedulerManager extends AbstractService implements
         }
         LOG.info("Shutting down AppCallbackExecutor");
         appCallbackExecutor.shutdownNow();
-        appCallbackExecutor.awaitTermination(1000l, TimeUnit.MILLISECONDS);
+        appCallbackExecutor.awaitTermination(1000L, TimeUnit.MILLISECONDS);
     }
 
     // TaskSchedulerAppCallback methods with schedulerId, where relevant
@@ -764,6 +762,7 @@ public class TaskSchedulerManager extends AbstractService implements
                         event.getContainerContext(), event.getLauncherId(), event.getTaskCommId()));
             }
         }
+
         sendEvent(new AMContainerEventAssignTA(containerId, taskAttempt.getTaskAttemptID(),
                 event.getRemoteTaskSpec(), event.getContainerContext().getLocalResources(), event
                 .getContainerContext().getCredentials(), event.getPriority()));

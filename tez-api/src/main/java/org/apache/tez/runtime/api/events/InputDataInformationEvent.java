@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,14 +30,14 @@ import org.apache.tez.runtime.api.InputInitializer;
  * Events used by {@link InputInitializer} implementations to provide the
  * user payload for individual tasks running as part of the Vertex for which an
  * Initial Input has been configured.
- * 
+ *
  * This event is used by InputInitialziers to configure tasks belonging to a
  * Vertex. The event may be processed by a @link {@link VertexManagerPlugin}
  * before being sent to tasks.
- * 
+ *
  * A {@link InputInitializer} may send Events with or without a
  * serialized user payload.
- * 
+ *
  * Events, after being processed by a {@link VertexManagerPlugin}, must
  * contain the payload in a serialized form.
  */
@@ -46,63 +46,63 @@ import org.apache.tez.runtime.api.InputInitializer;
 public final class InputDataInformationEvent extends Event {
 
 
-  private final int sourceIndex;
-  private int targetIndex; // TODO Likely to be multiple at a later point.
-  private final ByteBuffer userPayload;
-  private final Object userPayloadObject;
-  
+    private final int sourceIndex;
+    private int targetIndex; // TODO Likely to be multiple at a later point.
+    private final ByteBuffer userPayload;
+    private final Object userPayloadObject;
 
-  private InputDataInformationEvent(int srcIndex, ByteBuffer userPayload) {
-    this.sourceIndex = srcIndex;
-    this.userPayload = userPayload;
-    this.userPayloadObject = null;
-  }
-  
-  private InputDataInformationEvent(int srcIndex, Object userPayloadDeserialized, Object sigChanged) {
-    this.sourceIndex = srcIndex;
-    this.userPayloadObject = userPayloadDeserialized;
-    this.userPayload = null;
-  }
 
-  /**
-   * Provide a serialized form of the payload
-   * @param srcIndex the src index
-   * @param userPayload the serialized payload
-   */
-  public static InputDataInformationEvent createWithSerializedPayload(int srcIndex,
-                                                                      ByteBuffer userPayload) {
-    return new InputDataInformationEvent(srcIndex, userPayload);
-  }
+    private InputDataInformationEvent(int srcIndex, ByteBuffer userPayload) {
+        this.sourceIndex = srcIndex;
+        this.userPayload = userPayload;
+        this.userPayloadObject = null;
+    }
 
-  public static InputDataInformationEvent createWithObjectPayload(int srcIndex,
-                                                                  Object userPayloadDeserialized) {
-    return new InputDataInformationEvent(srcIndex, userPayloadDeserialized, null);
-  }
+    private InputDataInformationEvent(int srcIndex, Object userPayloadDeserialized, Object sigChanged) {
+        this.sourceIndex = srcIndex;
+        this.userPayloadObject = userPayloadDeserialized;
+        this.userPayload = null;
+    }
 
-  public int getSourceIndex() {
-    return this.sourceIndex;
-  }
+    /**
+     * Provide a serialized form of the payload
+     * @param srcIndex the src index
+     * @param userPayload the serialized payload
+     */
+    public static InputDataInformationEvent createWithSerializedPayload(int srcIndex,
+                                                                        ByteBuffer userPayload) {
+        return new InputDataInformationEvent(srcIndex, userPayload);
+    }
 
-  public int getTargetIndex() {
-    return this.targetIndex;
-  }
+    public static InputDataInformationEvent createWithObjectPayload(int srcIndex,
+                                                                    Object userPayloadDeserialized) {
+        return new InputDataInformationEvent(srcIndex, userPayloadDeserialized, null);
+    }
 
-  public void setTargetIndex(int target) {
-    this.targetIndex = target;
-  }
-  
-  public ByteBuffer getUserPayload() {
-    return userPayload == null ? null : userPayload.asReadOnlyBuffer();
-  }
-  
-  public Object getDeserializedUserPayload() {
-    return this.userPayloadObject;
-  }
+    public int getSourceIndex() {
+        return this.sourceIndex;
+    }
 
-  @Override
-  public String toString() {
-    return "InputDataInformationEvent [sourceIndex=" + sourceIndex + ", targetIndex="
-        + targetIndex + ", serializedUserPayloadExists=" + (userPayload != null)
-        + ", deserializedUserPayloadExists=" + (userPayloadObject != null) + "]";
-  } 
+    public int getTargetIndex() {
+        return this.targetIndex;
+    }
+
+    public void setTargetIndex(int target) {
+        this.targetIndex = target;
+    }
+
+    public ByteBuffer getUserPayload() {
+        return userPayload == null ? null : userPayload.asReadOnlyBuffer();
+    }
+
+    public Object getDeserializedUserPayload() {
+        return this.userPayloadObject;
+    }
+
+    @Override
+    public String toString() {
+        return "InputDataInformationEvent [sourceIndex=" + sourceIndex + ", targetIndex="
+                + targetIndex + ", serializedUserPayloadExists=" + (userPayload != null)
+                + ", deserializedUserPayloadExists=" + (userPayloadObject != null) + "]";
+    }
 }

@@ -683,7 +683,7 @@ public class TestAMRecovery {
 
     @Override
     public void onRootVertexInitialized(String inputName,
-        InputDescriptor inputDescriptor, List<Event> events) throws Exception {
+        InputDescriptor inputDescriptor, List<Event> eventList) throws Exception {
       
     }
   }

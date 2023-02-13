@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,18 +37,18 @@ import org.apache.tez.runtime.api.InputInitializer;
 @Public
 public class InputUpdatePayloadEvent extends Event {
 
-  private final ByteBuffer userPayload;
+    private final ByteBuffer userPayload;
 
-  private InputUpdatePayloadEvent(ByteBuffer userPayload) {
-    Objects.requireNonNull(userPayload);
-    this.userPayload = userPayload;
-  }
+    private InputUpdatePayloadEvent(ByteBuffer userPayload) {
+        Objects.requireNonNull(userPayload);
+        this.userPayload = userPayload;
+    }
 
-  public static InputUpdatePayloadEvent create(ByteBuffer userPayload) {
-    return new InputUpdatePayloadEvent(userPayload);
-  }
+    public static InputUpdatePayloadEvent create(ByteBuffer userPayload) {
+        return new InputUpdatePayloadEvent(userPayload);
+    }
 
-  public ByteBuffer getUserPayload() {
-    return userPayload == null ? null : userPayload.asReadOnlyBuffer();
-  }
+    public ByteBuffer getUserPayload() {
+        return userPayload == null ? null : userPayload.asReadOnlyBuffer();
+    }
 }

@@ -1042,23 +1042,23 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
     }
 
     protected void initializeVerticesAndStart() {
-        for (Vertex v : vertexId_vertex.values()) {
-            if (v.getInputVerticesCount() == 0) {
+        for (Vertex vertex : vertexId_vertex.values()) {
+            if (vertex.getInputVerticesCount() == 0) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Initing root vertex " + v.getLogIdentifier());
+                    LOG.debug("init root vertex " + vertex.getLogIdentifier());
                 }
 
-                eventHandler.handle(new VertexEvent(v.getVertexId(), VertexEventType.V_INIT));
+                eventHandler.handle(new VertexEvent(vertex.getVertexId(), VertexEventType.V_INIT));
             }
         }
 
-        for (Vertex v : vertexId_vertex.values()) {
-            if (v.getInputVerticesCount() == 0) {
+        for (Vertex vertex : vertexId_vertex.values()) {
+            if (vertex.getInputVerticesCount() == 0) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Starting root vertex " + v.getLogIdentifier());
+                    LOG.debug("starting root vertex " + vertex.getLogIdentifier());
                 }
 
-                eventHandler.handle(new VertexEvent(v.getVertexId(), VertexEventType.V_START));
+                eventHandler.handle(new VertexEvent(vertex.getVertexId(), VertexEventType.V_START));
             }
         }
     }
@@ -1555,7 +1555,6 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
         }
     }
 
-
     DAGState initializeDAG() {
         commitAllOutputsOnSuccess = dagConf.getBoolean(
                 TezConfiguration.TEZ_AM_COMMIT_ALL_OUTPUTS_ON_DAG_SUCCESS,
@@ -1573,13 +1572,10 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
             for (PlanVertexGroupInfo groupInfo : jobPlan.getVertexGroupsList()) {
                 vertexGroups.put(groupInfo.getGroupName(), new VertexGroupInfo(groupInfo));
             }
+
             for (VertexGroupInfo groupInfo : vertexGroups.values()) {
                 for (String vertexName : groupInfo.groupMembers) {
-                    List<VertexGroupInfo> groupList = vertexGroupInfo.get(vertexName);
-                    if (groupList == null) {
-                        groupList = Lists.newLinkedList();
-                        vertexGroupInfo.put(vertexName, groupList);
-                    }
+                    List<VertexGroupInfo> groupList = vertexGroupInfo.computeIfAbsent(vertexName, vertexName0 -> Lists.newLinkedList());
                     groupList.add(groupInfo);
                 }
             }
@@ -1723,8 +1719,7 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
         TezVertexID vertexId = TezBuilderUtils.newVertexID(dag.getID(), vId);
 
         VertexPlan vertexPlan = dag.getJobPlan().getVertex(vId);
-        VertexLocationHint vertexLocationHint = DagTypeConverters
-                .convertFromDAGPlan(vertexPlan.getTaskLocationHintList());
+        VertexLocationHint vertexLocationHint = DagTypeConverters.convertFromDAGPlan(vertexPlan.getTaskLocationHintList());
 
         return new VertexImpl(
                 vertexId, vertexPlan, vertexName, dag.dagConf,
@@ -1739,11 +1734,9 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
     private static void parseVertexEdges(DAGImpl dag, Map<String, EdgePlan> edgePlans, Vertex vertex) {
         VertexPlan vertexPlan = vertex.getVertexPlan();
 
-        Map<Vertex, Edge> inVertices =
-                new HashMap<Vertex, Edge>();
+        Map<Vertex, Edge> inVertices = new HashMap<>();
 
-        Map<Vertex, Edge> outVertices =
-                new HashMap<Vertex, Edge>();
+        Map<Vertex, Edge> outVertices = new HashMap<>();
 
         for (String inEdgeId : vertexPlan.getInEdgeIdList()) {
             EdgePlan edgePlan = edgePlans.get(inEdgeId);
@@ -1757,9 +1750,11 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
         for (String outEdgeId : vertexPlan.getOutEdgeIdList()) {
             EdgePlan edgePlan = edgePlans.get(outEdgeId);
             Vertex outVertex = dag.vertexName_vertex.get(edgePlan.getOutputVertexName());
+
             Edge edge = dag.edgeId_edge.get(outEdgeId);
             edge.setSourceVertex(vertex);
             edge.setDestinationVertex(outVertex);
+
             outVertices.put(outVertex, edge);
         }
 
@@ -1885,14 +1880,15 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
          * triggered in MRAppMaster's startJobs() method.
          */
         @Override
-        public void transition(DAGImpl dag, DAGEvent event) {
+        public void transition(DAGImpl dag, DAGEvent dagEvent) {
             if (dag.recoveryData != null && dag.recoveryData.getDAGStartedEvent() != null) {
                 dag.startTime = dag.recoveryData.getDAGStartedEvent().getStartTime();
             } else {
                 dag.startTime = dag.clock.getTime();
             }
 
-            DAGEventStartDag dagEventStartDag = (DAGEventStartDag) event;
+            DAGEventStartDag dagEventStartDag = (DAGEventStartDag) dagEvent;
+
             List<URL> additionalUrlsForClasspath = dagEventStartDag.getAdditionalUrlsForClasspath();
             if (additionalUrlsForClasspath != null) {
                 LOG.info("Added additional resources : [" + additionalUrlsForClasspath + "] to classpath");
@@ -1912,9 +1908,9 @@ public class DAGImpl implements org.apache.tez.dag.app.dag.DAG, EventHandler<DAG
     // use LinkedHashMap to ensure the vertex order (TEZ-1065)
     LinkedHashMap<String, Vertex> vertexName_vertex = new LinkedHashMap<>();
 
-    void addVertex(Vertex v) {
-        vertexId_vertex.put(v.getVertexId(), v);
-        vertexName_vertex.put(v.getName(), v);
+    void addVertex(Vertex vertex) {
+        vertexId_vertex.put(vertex.getVertexId(), vertex);
+        vertexName_vertex.put(vertex.getName(), vertex);
     }
 
     @Override

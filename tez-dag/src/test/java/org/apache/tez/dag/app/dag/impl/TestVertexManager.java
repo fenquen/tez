@@ -126,7 +126,7 @@ public class TestVertexManager {
 
     @Override
     public void onRootVertexInitialized(String inputName, InputDescriptor inputDescriptor,
-                                        List<Event> events) throws Exception {}
+                                        List<Event> eventList) throws Exception {}
   }
 
   @Test(timeout = 5000)
@@ -318,12 +318,12 @@ public class TestVertexManager {
      */
     @Override
     public void onRootVertexInitialized(String inputName,
-        InputDescriptor inputDescriptor, List<Event> events) {
-      cachedEventMap.put(inputName, events);
+        InputDescriptor inputDescriptor, List<Event> eventList) {
+      cachedEventMap.put(inputName, eventList);
       if (inputName.equals("input2")) {
         for (Map.Entry<String, List<Event>> entry : cachedEventMap.entrySet()) {
           List<InputDataInformationEvent> riEvents = Lists.newLinkedList();
-          for (Event event : events) {
+          for (Event event : eventList) {
             riEvents.add((InputDataInformationEvent)event);
           }
           getContext().addRootInputEvents(entry.getKey(), riEvents);

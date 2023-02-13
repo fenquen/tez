@@ -91,7 +91,7 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 public class VertexManager {
     final VertexManagerPluginDescriptor pluginDesc;
     final UserGroupInformation dagUgi;
-    final VertexManagerPlugin plugin;
+    final VertexManagerPlugin vertexManagerPlugin;
     final Vertex managedVertex;
     final VertexManagerPluginContextImpl pluginContext;
     final UserPayload payload;
@@ -426,15 +426,15 @@ public class VertexManager {
         pluginContext = new VertexManagerPluginContextImpl();
         payload = pluginDesc.getUserPayload();
         pluginFailed = new AtomicBoolean(false);
-        plugin = ReflectionUtils.createClazzInstance(pluginDesc.getClassName(),
+        vertexManagerPlugin = ReflectionUtils.createClazzInstance(pluginDesc.getClassName(),
                 new Class[]{VertexManagerPluginContext.class}, new Object[]{pluginContext});
         execService = appContext.getExecService();
         eventQueue = new LinkedBlockingQueue<VertexManagerEvent>();
         eventInFlight = new AtomicBoolean(false);
     }
 
-    public VertexManagerPlugin getPlugin() {
-        return plugin;
+    public VertexManagerPlugin getVertexManagerPlugin() {
+        return vertexManagerPlugin;
     }
 
     public void initialize() throws AMUserCodeException {
@@ -442,7 +442,7 @@ public class VertexManager {
             if (!pluginContext.isComplete()) {
                 // TODO TEZ-2066 tracks moving this async.
                 synchronized (VertexManager.this) {
-                    plugin.initialize();
+                    vertexManagerPlugin.initialize();
                 }
             }
         } catch (Exception e) {
@@ -518,13 +518,14 @@ public class VertexManager {
     }
 
     public void onRootVertexInitialized(String inputName,
-                                        InputDescriptor inputDescriptor, List<Event> events) throws AMUserCodeException {
+                                        InputDescriptor inputDescriptor,
+                                        List<Event> eventList) throws AMUserCodeException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("vertex:" + managedVertex.getLogIdentifier() + "; enqueueing onRootVertexInitialized"
                     + " on input:" + inputName + ", current task events size is " + rootInputInitEventQueue.size());
         }
-        enqueueAndScheduleNextEvent(new VertexManagerEventRootInputInitialized(inputName,
-                inputDescriptor, events));
+
+        enqueueAndScheduleNextEvent(new VertexManagerEventRootInputInitialized(inputName, inputDescriptor, eventList));
     }
 
     private class VertexManagerCallback implements FutureCallback<Void> {
@@ -603,7 +604,7 @@ public class VertexManager {
 
         @Override
         public void invoke() throws Exception {
-            plugin.onVertexStateUpdated(event);
+            vertexManagerPlugin.onVertexStateUpdated(event);
         }
 
     }
@@ -617,7 +618,7 @@ public class VertexManager {
 
         @Override
         public void invoke() throws Exception {
-            plugin.onVertexStarted(pluginCompletions);
+            vertexManagerPlugin.onVertexStarted(pluginCompletions);
         }
 
     }
@@ -631,7 +632,7 @@ public class VertexManager {
 
         @Override
         public void invoke() throws Exception {
-            plugin.onSourceTaskCompleted(attempt);
+            vertexManagerPlugin.onSourceTaskCompleted(attempt);
         }
 
     }
@@ -645,7 +646,7 @@ public class VertexManager {
 
         @Override
         public void invoke() throws Exception {
-            plugin.onVertexManagerEventReceived(vmEvent);
+            vertexManagerPlugin.onVertexManagerEventReceived(vmEvent);
         }
 
     }
@@ -653,19 +654,19 @@ public class VertexManager {
     class VertexManagerEventRootInputInitialized extends VertexManagerEvent {
         private final String inputName;
         private final InputDescriptor inputDescriptor;
-        private final List<Event> events;
+        private final List<Event> eventList;
 
         public VertexManagerEventRootInputInitialized(String inputName,
-                                                      InputDescriptor inputDescriptor, List<Event> events) {
+                                                      InputDescriptor inputDescriptor, List<Event> eventList) {
             super(new VertexManagerRootInputInitializedCallback());
             this.inputName = inputName;
             this.inputDescriptor = inputDescriptor;
-            this.events = events;
+            this.eventList = eventList;
         }
 
         @Override
         public void invoke() throws Exception {
-            plugin.onRootVertexInitialized(inputName, inputDescriptor, events);
+            vertexManagerPlugin.onRootVertexInitialized(inputName, inputDescriptor, eventList);
         }
 
     }

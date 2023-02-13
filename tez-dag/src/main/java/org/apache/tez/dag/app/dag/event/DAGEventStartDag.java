@@ -27,12 +27,13 @@ public class DAGEventStartDag extends DAGEvent {
 
     private final List<URL> additionalUrlsForClasspath;
 
-    public DAGEventStartDag(TezDAGID dagId, List<URL> additionalUrlsForClasspath) {
+    public DAGEventStartDag(TezDAGID dagId,
+                            List<URL> additionalUrlsForClasspath) {
         super(dagId, DAGEventType.DAG_START);
         this.additionalUrlsForClasspath = additionalUrlsForClasspath;
     }
 
     public List<URL> getAdditionalUrlsForClasspath() {
-        return this.additionalUrlsForClasspath;
+        return additionalUrlsForClasspath;
     }
 }

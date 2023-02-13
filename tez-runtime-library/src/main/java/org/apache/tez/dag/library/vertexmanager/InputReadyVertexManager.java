@@ -205,7 +205,7 @@ public class InputReadyVertexManager extends VertexManagerPlugin {
 
   @Override
   public synchronized void onRootVertexInitialized(String inputName,
-      InputDescriptor inputDescriptor, List<Event> events) {
+      InputDescriptor inputDescriptor, List<Event> eventList) {
   }
   
   void handleSourceTaskFinished(String vertex, Integer taskId) {

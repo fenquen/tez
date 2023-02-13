@@ -69,7 +69,7 @@ public interface Vertex extends Comparable<Vertex> {
 
     TezVertexID getVertexId();
 
-    public VertexPlan getVertexPlan();
+    VertexPlan getVertexPlan();
 
     int getDistanceFromRoot();
 
@@ -81,18 +81,21 @@ public interface Vertex extends Comparable<Vertex> {
 
     /**
      * Get all the counters of this vertex.
+     *
      * @return aggregate task-counters
      */
     TezCounters getAllCounters();
 
     /**
      * Get all the counters of this vertex.
+     *
      * @return aggregate task-counters
      */
     TezCounters getCachedCounters();
 
     /**
      * Add custom counters to the vertex
+     *
      * @param tezCounters counters to add
      */
     void addCounters(TezCounters tezCounters);

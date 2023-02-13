@@ -149,9 +149,9 @@ public class MultiAttemptDAG {
 
     @Override
     public void onRootVertexInitialized(String inputName,
-        InputDescriptor inputDescriptor, List<Event> events) {
+        InputDescriptor inputDescriptor, List<Event> eventList) {
       List<InputDataInformationEvent> inputInfoEvents = new ArrayList<InputDataInformationEvent>();
-      for (Event event: events) {
+      for (Event event: eventList) {
         if (event instanceof InputDataInformationEvent) {
           inputInfoEvents.add((InputDataInformationEvent)event);
         }

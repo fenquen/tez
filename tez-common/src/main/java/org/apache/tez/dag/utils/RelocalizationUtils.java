@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,33 +37,33 @@ import com.google.common.collect.Lists;
 
 @InterfaceAudience.Private
 public class RelocalizationUtils {
-  
-  public static List<URL> processAdditionalResources(Map<String, URI> additionalResources,
-      Configuration conf, String destDir) throws IOException, TezException {
-    if (additionalResources == null || additionalResources.isEmpty()) {
-      return Collections.emptyList();
+
+    public static List<URL> processAdditionalResources(Map<String, URI> additionalResources,
+                                                       Configuration conf, String destDir) throws IOException, TezException {
+        if (additionalResources == null || additionalResources.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<URL> urls = Lists.newArrayListWithCapacity(additionalResources.size());
+
+        for (Entry<String, URI> lrEntry : additionalResources.entrySet()) {
+            Path dFile = downloadResource(lrEntry.getKey(), lrEntry.getValue(), conf, destDir);
+            urls.add(dFile.toUri().toURL());
+        }
+        return urls;
     }
 
-    List<URL> urls = Lists.newArrayListWithCapacity(additionalResources.size());
-
-    for (Entry<String, URI> lrEntry : additionalResources.entrySet()) {
-      Path dFile = downloadResource(lrEntry.getKey(), lrEntry.getValue(), conf, destDir);
-      urls.add(dFile.toUri().toURL());
+    public static void addUrlsToClassPath(List<URL> urls) {
+        ReflectionUtils.addResourcesToSystemClassLoader(urls);
     }
-    return urls;
-  }
 
-  public static void addUrlsToClassPath(List<URL> urls) {
-    ReflectionUtils.addResourcesToSystemClassLoader(urls);
-  }
-
-  private static Path downloadResource(String destName, URI uri, Configuration conf, String destDir)
-      throws IOException {
-    FileSystem fs = FileSystem.get(uri, conf);
-    Path cwd = new Path(destDir);
-    Path dFile = new Path(cwd, destName);
-    Path srcPath = new Path(uri);
-    fs.copyToLocalFile(srcPath, dFile);
-    return dFile.makeQualified(FileSystem.getLocal(conf).getUri(), cwd);
-  }
+    private static Path downloadResource(String destName, URI uri, Configuration conf, String destDir)
+            throws IOException {
+        FileSystem fs = FileSystem.get(uri, conf);
+        Path cwd = new Path(destDir);
+        Path dFile = new Path(cwd, destName);
+        Path srcPath = new Path(uri);
+        fs.copyToLocalFile(srcPath, dFile);
+        return dFile.makeQualified(FileSystem.getLocal(conf).getUri(), cwd);
+    }
 }

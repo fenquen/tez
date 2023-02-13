@@ -43,15 +43,15 @@ public class EdgeProperty {
      */
     public enum DataMovementType {
         /**
-         * Output on this edge produced by the i-th source task is available to the
-         * i-th destination task.
+         * Output on this edge produced by the i-th source task is available to the i-th destination task.
          */
         ONE_TO_ONE,
+
         /**
-         * Output on this edge produced by any source task is available to all
-         * destination tasks.
+         * Output on this edge produced by any source task is available to all destination tasks.
          */
         BROADCAST,
+
         /**
          * The i-th output on this edge produced by all source tasks is available to
          * the same destination task. Source tasks scatter their outputs and they
@@ -95,13 +95,12 @@ public class EdgeProperty {
      */
     public enum SchedulingType {
         /**
-         * Destination task is eligible to run after one or more of its source tasks
-         * have started or completed.
+         * Destination task is eligible to run after one or more of its source tasks have started or completed.
          */
         SEQUENTIAL,
+
         /**
-         * Destination task must run concurrently with the source task.
-         * Development in progress.
+         * Destination task must run concurrently with the source task,Development in progress.
          */
         @Unstable
         CONCURRENT
@@ -156,15 +155,12 @@ public class EdgeProperty {
     /**
      * Setup an Edge which uses a custom EdgeManager
      *
-     * @param edgeManagerDescriptor
-     *          the EdgeManager specifications. This can be null if the edge
-     *          manager will be setup at runtime
+     * @param edgeManagerDescriptor the EdgeManager specifications. This can be null if the edge
+     *                              manager will be setup at runtime
      * @param dataSourceType
      * @param schedulingType
-     * @param edgeSource
-     *          The {@link OutputDescriptor} that generates data on the edge.
-     * @param edgeDestination
-     *          The {@link InputDescriptor} which will consume data from the edge.
+     * @param edgeSource            The {@link OutputDescriptor} that generates data on the edge.
+     * @param edgeDestination       The {@link InputDescriptor} which will consume data from the edge.
      */
     public static EdgeProperty create(EdgeManagerPluginDescriptor edgeManagerDescriptor,
                                       DataSourceType dataSourceType,
@@ -216,6 +212,7 @@ public class EdgeProperty {
 
     /**
      * Get the {@link DataMovementType}
+     *
      * @return {@link DataMovementType}
      */
     public DataMovementType getDataMovementType() {
@@ -224,6 +221,7 @@ public class EdgeProperty {
 
     /**
      * Get the {@link DataSourceType}
+     *
      * @return {@link DataSourceType}
      */
     public DataSourceType getDataSourceType() {
@@ -232,6 +230,7 @@ public class EdgeProperty {
 
     /**
      * Get the {@link SchedulingType}
+     *
      * @return {@link SchedulingType}
      */
     public SchedulingType getSchedulingType() {
@@ -254,6 +253,7 @@ public class EdgeProperty {
 
     /**
      * Returns the Edge Manager specifications for this edge.
+     *
      * @return @link {@link EdgeManagerPluginDescriptor} if a custom edge was setup, null otherwise.
      */
     @Private

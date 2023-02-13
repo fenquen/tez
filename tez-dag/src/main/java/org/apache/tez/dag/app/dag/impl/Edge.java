@@ -697,12 +697,11 @@ public class Edge {
     }
 
     private String generateCommonDebugString(int srcTaskIndex, TezEvent tezEvent) {
-        return new StringBuilder()
-                .append(" sourceVertex=").append(sourceVertex.getLogIdentifier())
-                .append(" srcIndex = ").append(srcTaskIndex)
-                .append(" destAttemptId=").append(destinationVertex.getLogIdentifier())
-                .append(" edgeManager=").append(edgeManager.getClass().getName())
-                .append(" Event type=").append(tezEvent.getEventType()).toString();
+        return " sourceVertex=" + sourceVertex.getLogIdentifier() +
+                " srcIndex = " + srcTaskIndex +
+                " destAttemptId=" + destinationVertex.getLogIdentifier() +
+                " edgeManager=" + edgeManager.getClass().getName() +
+                " Event type=" + tezEvent.getEventType();
     }
 
     private String getEdgeInfo() {

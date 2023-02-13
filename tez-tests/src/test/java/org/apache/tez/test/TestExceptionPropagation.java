@@ -699,11 +699,11 @@ public class TestExceptionPropagation {
 
     @Override
     public void onRootVertexInitialized(String inputName,
-        InputDescriptor inputDescriptor, List<Event> events) {
+        InputDescriptor inputDescriptor, List<Event> eventList) {
       if (this.exLocation == ExceptionLocation.VM_ON_ROOTVERTEX_INITIALIZE) {
         throw new RuntimeException(this.exLocation.name());
       }
-      super.onRootVertexInitialized(inputName, inputDescriptor, events);
+      super.onRootVertexInitialized(inputName, inputDescriptor, eventList);
     }
 
     @Override

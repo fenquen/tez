@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -58,75 +58,75 @@ import com.google.common.collect.Lists;
 @Evolving
 public class MRInputSplitDistributor extends InputInitializer {
 
-  private static final Logger LOG = LoggerFactory.getLogger(MRInputSplitDistributor.class);
-  
-  private boolean sendSerializedEvents;
+    private static final Logger LOG = LoggerFactory.getLogger(MRInputSplitDistributor.class);
 
-  private MRSplitsProto splitsProto;
+    private boolean sendSerializedEvents;
 
-  public MRInputSplitDistributor(InputInitializerContext initializerContext) {
-    super(initializerContext);
-  }
+    private MRSplitsProto splitsProto;
 
-  @Override
-  public List<Event> initialize() throws IOException {
-    StopWatch sw = new StopWatch().start();
-    MRInputUserPayloadProto userPayloadProto = MRInputHelpers
-        .parseMRInputPayload(getContext().getInputUserPayload());
-    sw.stop();
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Time to parse MRInput payload into prot: "
-          + sw.now(TimeUnit.MILLISECONDS));
+    public MRInputSplitDistributor(InputInitializerContext initializerContext) {
+        super(initializerContext);
     }
-    Configuration conf = TezUtils.createConfFromByteString(userPayloadProto
-        .getConfigurationBytes());
-    JobConf jobConf = new JobConf(conf);
-    boolean useNewApi = jobConf.getUseNewMapper();
-    sendSerializedEvents = conf.getBoolean(
-        MRJobConfig.MR_TEZ_INPUT_INITIALIZER_SERIALIZE_EVENT_PAYLOAD,
-        MRJobConfig.MR_TEZ_INPUT_INITIALIZER_SERIALIZE_EVENT_PAYLOAD_DEFAULT);
-    LOG.info("Emitting serialized splits: " + sendSerializedEvents);
 
-    this.splitsProto = userPayloadProto.getSplits();
-    
-    MRInputUserPayloadProto.Builder updatedPayloadBuilder = MRInputUserPayloadProto.newBuilder(userPayloadProto);
-    updatedPayloadBuilder.clearSplits();
-
-    List<Event> events = Lists.newArrayListWithCapacity(this.splitsProto.getSplitsCount() + 1);
-    InputUpdatePayloadEvent updatePayloadEvent = InputUpdatePayloadEvent.create(
-        updatedPayloadBuilder.build().toByteString().asReadOnlyByteBuffer());
-
-    events.add(updatePayloadEvent);
-    int count = 0;
-
-    for (MRSplitProto mrSplit : this.splitsProto.getSplitsList()) {
-
-      InputDataInformationEvent diEvent;
-
-      if (sendSerializedEvents) {
-        // Unnecessary array copy, can be avoided by using ByteBuffer instead of
-        // a raw array.
-        diEvent = InputDataInformationEvent.createWithSerializedPayload(count++,
-            mrSplit.toByteString().asReadOnlyByteBuffer());
-      } else {
-        if (useNewApi) {
-          org.apache.hadoop.mapreduce.InputSplit newInputSplit = MRInputUtils
-              .getNewSplitDetailsFromEvent(mrSplit, conf);
-          diEvent = InputDataInformationEvent.createWithObjectPayload(count++, newInputSplit);
-        } else {
-          org.apache.hadoop.mapred.InputSplit oldInputSplit = MRInputUtils
-              .getOldSplitDetailsFromEvent(mrSplit, conf);
-          diEvent = InputDataInformationEvent.createWithObjectPayload(count++, oldInputSplit);
+    @Override
+    public List<Event> initialize() throws IOException {
+        StopWatch sw = new StopWatch().start();
+        MRInputUserPayloadProto userPayloadProto = MRInputHelpers
+                .parseMRInputPayload(getContext().getInputUserPayload());
+        sw.stop();
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Time to parse MRInput payload into prot: "
+                    + sw.now(TimeUnit.MILLISECONDS));
         }
-      }
-      events.add(diEvent);
+        Configuration conf = TezUtils.createConfFromByteString(userPayloadProto
+                .getConfigurationBytes());
+        JobConf jobConf = new JobConf(conf);
+        boolean useNewApi = jobConf.getUseNewMapper();
+        sendSerializedEvents = conf.getBoolean(
+                MRJobConfig.MR_TEZ_INPUT_INITIALIZER_SERIALIZE_EVENT_PAYLOAD,
+                MRJobConfig.MR_TEZ_INPUT_INITIALIZER_SERIALIZE_EVENT_PAYLOAD_DEFAULT);
+        LOG.info("Emitting serialized splits: " + sendSerializedEvents);
+
+        this.splitsProto = userPayloadProto.getSplits();
+
+        MRInputUserPayloadProto.Builder updatedPayloadBuilder = MRInputUserPayloadProto.newBuilder(userPayloadProto);
+        updatedPayloadBuilder.clearSplits();
+
+        List<Event> events = Lists.newArrayListWithCapacity(this.splitsProto.getSplitsCount() + 1);
+        InputUpdatePayloadEvent updatePayloadEvent = InputUpdatePayloadEvent.create(
+                updatedPayloadBuilder.build().toByteString().asReadOnlyByteBuffer());
+
+        events.add(updatePayloadEvent);
+        int count = 0;
+
+        for (MRSplitProto mrSplit : this.splitsProto.getSplitsList()) {
+
+            InputDataInformationEvent diEvent;
+
+            if (sendSerializedEvents) {
+                // Unnecessary array copy, can be avoided by using ByteBuffer instead of
+                // a raw array.
+                diEvent = InputDataInformationEvent.createWithSerializedPayload(count++,
+                        mrSplit.toByteString().asReadOnlyByteBuffer());
+            } else {
+                if (useNewApi) {
+                    org.apache.hadoop.mapreduce.InputSplit newInputSplit = MRInputUtils
+                            .getNewSplitDetailsFromEvent(mrSplit, conf);
+                    diEvent = InputDataInformationEvent.createWithObjectPayload(count++, newInputSplit);
+                } else {
+                    org.apache.hadoop.mapred.InputSplit oldInputSplit = MRInputUtils
+                            .getOldSplitDetailsFromEvent(mrSplit, conf);
+                    diEvent = InputDataInformationEvent.createWithObjectPayload(count++, oldInputSplit);
+                }
+            }
+            events.add(diEvent);
+        }
+
+        return events;
     }
 
-    return events;
-  }
-
-  @Override
-  public void handleInputInitializerEvent(List<InputInitializerEvent> events) throws Exception {
-    throw new UnsupportedOperationException("Not expecting to handle any events");
-  }
+    @Override
+    public void handleInputInitializerEvent(List<InputInitializerEvent> events) throws Exception {
+        throw new UnsupportedOperationException("Not expecting to handle any events");
+    }
 }

@@ -1312,7 +1312,9 @@ public class DAGAppMaster extends AbstractService {
             if (!dagPlan.getName().startsWith(TezConstants.TEZ_PREWARM_DAG_NAME_PREFIX)) {
                 submittedDAGs.incrementAndGet();
             }
+
             startDAG(dagPlan, additionalResources);
+
             return currentDAG.getID().toString();
         }
     }
@@ -1925,7 +1927,7 @@ public class DAGAppMaster extends AbstractService {
 
     @Override
     public void serviceStart() throws Exception {
-        //start all the components
+        // start all the components
         startServices();
 
         super.serviceStart();
